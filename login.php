@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 
                 updateUserLastLogin($user['id']);
 
-                if (isset($user['role']) && strtolower($user['role']) === 'super_admin') {
+                if (isset($user['role']) && strtolower($user['role']) === 'admin') {
                     header('Location: admin/index.php');
                 } else {
                     header('Location: index.php');

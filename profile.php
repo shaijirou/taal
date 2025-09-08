@@ -141,10 +141,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profile'])) {
                     </div>
                     <div>
                         
-                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'super_admin'): ?>
+                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                             <h3>Settings</h3>
                             <div class="card" style="display: flex; align-items: center; justify-content: center;">
-                                <a href="admin/index.php" class="btn btn-primary" style="margin-top: 2rem;">⚙️ Administrator</a>
+                                <a href="admin/index.php" class="btn btn-primary    " style="margin-top: 2rem;">⚙️ Administrator</a>
                             </div>
                         <?php endif; ?>
                    

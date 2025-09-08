@@ -22,7 +22,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $contact_info = sanitizeInput($_POST['contact_info']);
         $opening_hours = sanitizeInput($_POST['opening_hours']);
         $price_range = sanitizeInput($_POST['price_range']);
-        $image_url = sanitizeInput($_POST['image_url']);
+        
+        $image_url = '';
+        if (isset($_FILES['poi_image']) && $_FILES['poi_image']['error'] === UPLOAD_ERR_OK) {
+            $upload_dir = '../uploads/pois/';
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+            
+            $file_extension = strtolower(pathinfo($_FILES['poi_image']['name'], PATHINFO_EXTENSION));
+            $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            
+            if (in_array($file_extension, $allowed_extensions)) {
+                $new_filename = uniqid('poi_') . '.' . $file_extension;
+                $upload_path = $upload_dir . $new_filename;
+                
+                if (move_uploaded_file($_FILES['poi_image']['tmp_name'], $upload_path)) {
+                    $image_url = 'uploads/pois/' . $new_filename;
+                }
+            }
+        }
         
         $query = "INSERT INTO points_of_interest (name, description, category, latitude, longitude, address, contact_info, opening_hours, price_range, image_url, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $db->prepare($query);
@@ -130,7 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $user_stmt->execute([$user_id]);
         $user_data = $user_stmt->fetch(PDO::FETCH_ASSOC);
         
-        $query = "DELETE FROM users WHERE id = ? AND role != 'super_admin'";
+        $query = "DELETE FROM users WHERE id = ? AND role != 'admin'";
         $stmt = $db->prepare($query);
         $stmt->execute([$user_id]);
         
@@ -224,88 +243,7 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
     <title>Admin Panel - <?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
-        /* Added admin-specific styling */
-        .admin-tabs {
-            display: flex;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            overflow: hidden;
-        }
-        .admin-tab {
-            flex: 1;
-            padding: 1rem;
-            text-align: center;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-            color: #666;
-            font-weight: 500;
-        }
-        .admin-tab.active {
-            background: #007bff;
-            color: white;
-        }
-        .admin-tab:hover {
-            background: #e9ecef;
-            color: #333;
-        }
-        .admin-tab.active:hover {
-            background: #0056b3;
-            color: white;
-        }
-        .user-filters {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
-        .user-filters input, .user-filters select {
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 1rem;
-            border-radius: 4px;
-            margin-bottom: 1rem;
-            border: 1px solid #c3e6cb;
-        }
-        .user-status {
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        .user-status.active {
-            background: #d4edda;
-            color: #155724;
-        }
-        .user-status.inactive {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        .role-badge {
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        .role-badge.user {
-            background: #e3f2fd;
-            color: #1565c0;
-        }
-        .role-badge.admin {
-            background: #fff3e0;
-            color: #ef6c00;
-        }
-        .role-badge.super_admin {
-            background: #fce4ec;
-            color: #c2185b;
-        }
+      
     </style>
 </head>
 <body>
@@ -446,7 +384,7 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                                 <select id="role" name="role" class="form-control" required>
                                     <option value="user" <?php echo ($edit_user && $edit_user['role'] === 'user') ? 'selected' : ''; ?>>User</option>
                                     <option value="admin" <?php echo ($edit_user && $edit_user['role'] === 'admin') ? 'selected' : ''; ?>>Admin</option>
-                                    <option value="super_admin" <?php echo ($edit_user && $edit_user['role'] === 'super_admin') ? 'selected' : ''; ?>>Super Admin</option>
+                                   
                                 </select>
                             </div>
                             <div class="form-group">
@@ -483,7 +421,7 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                             <option value="">All Roles</option>
                             <option value="user" <?php echo $role_filter === 'user' ? 'selected' : ''; ?>>User</option>
                             <option value="admin" <?php echo $role_filter === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                            <option value="super_admin" <?php echo $role_filter === 'super_admin' ? 'selected' : ''; ?>>Super Admin</option>
+                            <option value="admin" <?php echo $role_filter === 'admin' ? 'selected' : ''; ?>>Super Admin</option>
                         </select>
                         <select name="status_filter">
                             <option value="">All Status</option>
@@ -542,7 +480,7 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                                         </td>
                                         <td style="padding: 1rem; border-bottom: 1px solid #eee;">
                                             <a href="?tab=users&edit_user=<?php echo $user['id']; ?>" class="btn btn-primary" style="margin-right: 0.5rem;">Edit</a>
-                                            <?php if ($user['role'] !== 'super_admin'): ?>
+                                            <?php if ($user['role'] !== 'admin'): ?>
                                                 <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                                     <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
                                                     <button type="submit" name="delete_user" class="btn btn-danger">Delete</button>
@@ -561,7 +499,8 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                 <!-- Add New POI -->
                 <div class="card mb-4">
                     <h3>Add New Point of Interest</h3>
-                    <form method="POST">
+                    <!-- Added enctype for file uploads -->
+                    <form method="POST" enctype="multipart/form-data">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div class="form-group">
                                 <label for="name">Name *</label>
@@ -612,9 +551,16 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                             </div>
                         </div>
                         
+                        <!-- Replaced URL input with file upload and preview -->
                         <div class="form-group">
-                            <label for="image_url">Image URL</label>
-                            <input type="url" id="image_url" name="image_url" class="form-control">
+                            <label for="poi_image">POI Image</label>
+                            <div class="image-upload-container">
+                                <input type="file" id="poi_image" name="poi_image" class="form-control" accept="image/*" onchange="previewImage(this, 'poi-preview')">
+                                <div id="poi-preview" class="image-preview" style="display: none;">
+                                    <img id="poi-preview-img" src="/placeholder.svg" alt="Preview" style="max-width: 200px; max-height: 200px; object-fit: cover; border-radius: 8px; margin-top: 10px;">
+                                    <button type="button" onclick="removePreview('poi-preview', 'poi_image')" style="display: block; margin-top: 5px; padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Remove</button>
+                                </div>
+                            </div>
                         </div>
                         
                         <button type="submit" name="add_poi" class="btn btn-success">Add Point of Interest</button>
@@ -628,6 +574,7 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                         <table style="width: 100%; border-collapse: collapse;">
                             <thead>
                                 <tr style="background: #f8f9fa;">
+                                    <th style="padding: 1rem; text-align: left; border-bottom: 1px solid #ddd;">Image</th>
                                     <th style="padding: 1rem; text-align: left; border-bottom: 1px solid #ddd;">Name</th>
                                     <th style="padding: 1rem; text-align: left; border-bottom: 1px solid #ddd;">Category</th>
                                     <th style="padding: 1rem; text-align: left; border-bottom: 1px solid #ddd;">Rating</th>
@@ -638,6 +585,16 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                             <tbody>
                                 <?php foreach ($pois as $poi): ?>
                                     <tr>
+                                        <!-- Added image column with proper display -->
+                                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">
+                                            <?php if (!empty($poi['image_url'])): ?>
+                                                <img src="../<?php echo htmlspecialchars($poi['image_url']); ?>" 
+                                                     alt="<?php echo htmlspecialchars($poi['name']); ?>" 
+                                                     style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
+                                            <?php else: ?>
+                                                <div style="width: 60px; height: 60px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #666; font-size: 12px;">No Image</div>
+                                            <?php endif; ?>
+                                        </td>
                                         <td style="padding: 1rem; border-bottom: 1px solid #eee;">
                                             <strong><?php echo htmlspecialchars($poi['name']); ?></strong><br>
                                             <small style="color: #666;"><?php echo htmlspecialchars(substr($poi['description'], 0, 50)) . '...'; ?></small>
@@ -669,5 +626,32 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
     </main>
     
     <?php include '../includes/footer.php'; ?>
+    
+    <!-- Added JavaScript for image preview functionality -->
+    <script>
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const previewImg = document.getElementById(previewId + '-img');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        function removePreview(previewId, inputId) {
+            const preview = document.getElementById(previewId);
+            const input = document.getElementById(inputId);
+            
+            preview.style.display = 'none';
+            input.value = '';
+        }
+    </script>
 </body>
 </html>

@@ -95,73 +95,7 @@ $activity_summary = $summary_stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>User Activity History - <?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
-        .activity-filters {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            align-items: end;
-        }
-        .activity-filters > div {
-            display: flex;
-            flex-direction: column;
-        }
-        .activity-filters input, .activity-filters select {
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-top: 0.25rem;
-        }
-        .activity-item {
-            padding: 1rem;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-        .activity-type {
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-right: 0.5rem;
-        }
-        .activity-type.login { background: #d4edda; color: #155724; }
-        .activity-type.logout { background: #f8d7da; color: #721c24; }
-        .activity-type.view_poi { background: #e3f2fd; color: #1565c0; }
-        .activity-type.add_favorite { background: #fff3e0; color: #ef6c00; }
-        .activity-type.remove_favorite { background: #fce4ec; color: #c2185b; }
-        .activity-type.add_review { background: #f3e5f5; color: #7b1fa2; }
-        .activity-type.search { background: #e8f5e8; color: #2e7d32; }
-        .activity-type.ai_chat { background: #fff8e1; color: #f57f17; }
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 2rem;
-        }
-        .pagination a, .pagination span {
-            padding: 0.5rem 1rem;
-            border: 1px solid #ddd;
-            text-decoration: none;
-            border-radius: 4px;
-        }
-        .pagination .current {
-            background: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        .summary-card {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-        }
+       
     </style>
 </head>
 <body>

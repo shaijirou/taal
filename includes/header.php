@@ -12,7 +12,7 @@
                     <li><a href="ai-guide.php">AI Guide</a></li>
                     <?php if (isLoggedIn()): ?>
                         <li><a href="profile.php">Profile</a></li>
-                        <?php if (getUserRole() === 'super_admin'): ?>
+                        <?php if (getUserRole() === 'admin'): ?>
                             <li><a href="admin/index.php">Administrator</a></li>
                         <?php endif; ?>
                         <li><a href="logout.php">Logout</a></li>

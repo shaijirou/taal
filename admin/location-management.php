@@ -23,7 +23,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $contact_info = sanitizeInput($_POST['contact_info']);
         $opening_hours = sanitizeInput($_POST['opening_hours']);
         $price_range = sanitizeInput($_POST['price_range']);
-        $image_url = sanitizeInput($_POST['image_url']);
+
+        $image_url = sanitizeInput($_POST['image_url']); // Keep existing image by default
+        
+        // Handle file upload
+        if (isset($_FILES['image_upload']) && $_FILES['image_upload']['error'] === UPLOAD_ERR_OK) {
+            $upload_dir = '../uploads/poi_images/';
+            
+            // Create directory if it doesn't exist
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+            
+            $file_info = pathinfo($_FILES['image_upload']['name']);
+            $file_extension = strtolower($file_info['extension']);
+            
+            // Validate file type
+            $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            if (in_array($file_extension, $allowed_extensions)) {
+                // Generate unique filename
+                $new_filename = 'poi_' . $poi_id . '_' . time() . '.' . $file_extension;
+                $upload_path = $upload_dir . $new_filename;
+                
+                // Validate file size (max 5MB)
+                if ($_FILES['image_upload']['size'] <= 5 * 1024 * 1024) {
+                    if (move_uploaded_file($_FILES['image_upload']['tmp_name'], $upload_path)) {
+                        // Delete old image if it exists and is not a URL
+                        if ($image_url && !filter_var($image_url, FILTER_VALIDATE_URL) && file_exists('../' . $image_url)) {
+                            unlink('../' . $image_url);
+                        }
+                        $image_url = 'uploads/poi_images/' . $new_filename;
+                    }
+                }
+            }
+        }
+        
         $status = sanitizeInput($_POST['status']);
         $featured = isset($_POST['featured']) ? 1 : 0;
         $admin_notes = sanitizeInput($_POST['admin_notes']);
@@ -48,61 +82,61 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
     
-    if (isset($_POST['bulk_action']) && isset($_POST['selected_pois'])) {
-        $action = $_POST['bulk_action'];
-        $selected_pois = $_POST['selected_pois'];
+    // if (isset($_POST['bulk_action']) && isset($_POST['selected_pois'])) {
+    //     $action = $_POST['bulk_action'];
+    //     $selected_pois = $_POST['selected_pois'];
         
-        foreach ($selected_pois as $poi_id) {
-            $poi_id = (int)$poi_id;
+    //     foreach ($selected_pois as $poi_id) {
+    //         $poi_id = (int)$poi_id;
             
-            switch ($action) {
-                case 'activate':
-                    $query = "UPDATE points_of_interest SET status = 'active' WHERE id = ?";
-                    $stmt = $db->prepare($query);
-                    $stmt->execute([$poi_id]);
-                    break;
+    //         switch ($action) {
+    //             case 'activate':
+    //                 $query = "UPDATE points_of_interest SET status = 'active' WHERE id = ?";
+    //                 $stmt = $db->prepare($query);
+    //                 $stmt->execute([$poi_id]);
+    //                 break;
                     
-                case 'deactivate':
-                    $query = "UPDATE points_of_interest SET status = 'inactive' WHERE id = ?";
-                    $stmt = $db->prepare($query);
-                    $stmt->execute([$poi_id]);
-                    break;
+    //             case 'deactivate':
+    //                 $query = "UPDATE points_of_interest SET status = 'inactive' WHERE id = ?";
+    //                 $stmt = $db->prepare($query);
+    //                 $stmt->execute([$poi_id]);
+    //                 break;
                     
-                case 'feature':
-                    $query = "UPDATE points_of_interest SET featured = 1 WHERE id = ?";
-                    $stmt = $db->prepare($query);
-                    $stmt->execute([$poi_id]);
-                    break;
+    //             case 'feature':
+    //                 $query = "UPDATE points_of_interest SET featured = 1 WHERE id = ?";
+    //                 $stmt = $db->prepare($query);
+    //                 $stmt->execute([$poi_id]);
+    //                 break;
                     
-                case 'unfeature':
-                    $query = "UPDATE points_of_interest SET featured = 0 WHERE id = ?";
-                    $stmt = $db->prepare($query);
-                    $stmt->execute([$poi_id]);
-                    break;
+    //             case 'unfeature':
+    //                 $query = "UPDATE points_of_interest SET featured = 0 WHERE id = ?";
+    //                 $stmt = $db->prepare($query);
+    //                 $stmt->execute([$poi_id]);
+    //                 break;
                     
-                case 'delete':
-                    // Get POI data for logging
-                    $poi_query = "SELECT * FROM points_of_interest WHERE id = ?";
-                    $poi_stmt = $db->prepare($poi_query);
-                    $poi_stmt->execute([$poi_id]);
-                    $poi_data = $poi_stmt->fetch(PDO::FETCH_ASSOC);
+    //             case 'delete':
+    //                 // Get POI data for logging
+    //                 $poi_query = "SELECT * FROM points_of_interest WHERE id = ?";
+    //                 $poi_stmt = $db->prepare($poi_query);
+    //                 $poi_stmt->execute([$poi_id]);
+    //                 $poi_data = $poi_stmt->fetch(PDO::FETCH_ASSOC);
                     
-                    $query = "DELETE FROM points_of_interest WHERE id = ?";
-                    $stmt = $db->prepare($query);
-                    $stmt->execute([$poi_id]);
+    //                 $query = "DELETE FROM points_of_interest WHERE id = ?";
+    //                 $stmt = $db->prepare($query);
+    //                 $stmt->execute([$poi_id]);
                     
-                    // Log admin action
-                    $admin_id = $_SESSION['user_id'];
-                    $log_query = "INSERT INTO admin_logs (admin_id, action, target_type, target_id, old_data, description, ip_address) VALUES (?, 'delete_poi', 'poi', ?, ?, 'Bulk deleted POI', ?)";
-                    $log_stmt = $db->prepare($log_query);
-                    $log_stmt->execute([$admin_id, $poi_id, json_encode($poi_data), $_SERVER['REMOTE_ADDR']]);
-                    break;
-            }
-        }
+    //                 // Log admin action
+    //                 $admin_id = $_SESSION['user_id'];
+    //                 $log_query = "INSERT INTO admin_logs (admin_id, action, target_type, target_id, old_data, description, ip_address) VALUES (?, 'delete_poi', 'poi', ?, ?, 'Bulk deleted POI', ?)";
+    //                 $log_stmt = $db->prepare($log_query);
+    //                 $log_stmt->execute([$admin_id, $poi_id, json_encode($poi_data), $_SERVER['REMOTE_ADDR']]);
+    //                 break;
+    //         }
+    //     }
         
-        header('Location: location-management.php?success=bulk_action_completed');
-        exit();
-    }
+    //     header('Location: location-management.php?success=bulk_action_completed');
+    //     exit();
+    // }
 }
 
 // Get filters
@@ -196,109 +230,56 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Location Management - <?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
     <style>
-        .location-filters {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            align-items: end;
-        }
-        .location-filters > div {
+        /* Added styles for image upload and preview */
+        .image-upload-container {
             display: flex;
             flex-direction: column;
-        }
-        .location-filters input, .location-filters select {
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-top: 0.25rem;
-        }
-        .poi-status {
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        .poi-status.active { background: #d4edda; color: #155724; }
-        .poi-status.inactive { background: #f8d7da; color: #721c24; }
-        .poi-status.pending { background: #fff3cd; color: #856404; }
-        .featured-badge {
-            background: #ffd700;
-            color: #333;
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        .bulk-actions {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            display: none;
-        }
-        .bulk-actions.show {
-            display: block;
-        }
-        .poi-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1rem;
         }
-        .poi-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 1rem;
-            background: white;
-        }
-        .poi-card.inactive {
-            opacity: 0.7;
-            background: #f8f9fa;
-        }
-        .poi-image {
-            width: 100%;
-            height: 150px;
+        
+        .image-preview {
+            max-width: 200px;
+            max-height: 150px;
             object-fit: cover;
-            border-radius: 4px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+        }
+        
+        .image-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .image-upload-area:hover {
+            border-color: #3498db;
+        }
+        
+        .image-upload-area.dragover {
+            border-color: #3498db;
+            background-color: #f8f9fa;
+        }
+        
+        .upload-text {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        .current-image {
             margin-bottom: 1rem;
         }
-        .poi-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        .stat-card {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .edit-form {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .edit-form-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            width: 90%;
+        
+        .remove-image-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 0.5rem;
         }
     </style>
 </head>
@@ -342,27 +323,27 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3 style="color: #3498db;"><?php echo $stats['total_pois']; ?></h3>
-                    <p>Total Locations</p>
+                    <p style="color: #666;">Total Locations</p>
                 </div>
                 <div class="stat-card">
                     <h3 style="color: #27ae60;"><?php echo $stats['active_pois']; ?></h3>
-                    <p>Active</p>
+                    <p style="color: #666;">Active</p>
                 </div>
                 <div class="stat-card">
                     <h3 style="color: #f39c12;"><?php echo $stats['pending_pois']; ?></h3>
-                    <p>Pending</p>
+                    <p style="color: #666;">Pending</p>
                 </div>
                 <div class="stat-card">
                     <h3 style="color: #e74c3c;"><?php echo $stats['inactive_pois']; ?></h3>
-                    <p>Inactive</p>
+                    <p style="color: #666;">Inactive</p>
                 </div>
                 <div class="stat-card">
                     <h3 style="color: #9b59b6;"><?php echo $stats['featured_pois']; ?></h3>
-                    <p>Featured</p>
+                    <p style="color: #666;">Featured</p>
                 </div>
                 <div class="stat-card">
                     <h3 style="color: #34495e;"><?php echo number_format($stats['total_views']); ?></h3>
-                    <p>Total Views</p>
+                    <p style="color: #666;">Total Views</p>
                 </div>
             </div>
             
@@ -476,7 +457,7 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php foreach ($pois as $poi): ?>
                             <div class="poi-card <?php echo $poi['status']; ?>">
                                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                                    <input type="checkbox" class="poi-checkbox" value="<?php echo $poi['id']; ?>" onchange="updateBulkActions()">
+                                    <!-- <input type="checkbox" class="poi-checkbox" value="<?php echo $poi['id']; ?>" onchange="updateBulkActions()"> -->
                                     <div style="display: flex; gap: 0.5rem;">
                                         <span class="poi-status <?php echo $poi['status']; ?>"><?php echo ucfirst($poi['status']); ?></span>
                                         <?php if ($poi['featured']): ?>
@@ -484,10 +465,25 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <?php endif; ?>
                                     </div>
                                 </div>
-                                
-                                <?php if ($poi['image_url']): ?>
-                                    <img src="<?php echo htmlspecialchars($poi['image_url']); ?>" alt="<?php echo htmlspecialchars($poi['name']); ?>" class="poi-image">
-                                <?php endif; ?>
+                                  <?php if ($poi['image_url']): ?>
+                                        <img src="../<?php echo htmlspecialchars($poi['image_url']); ?>" 
+                                            alt="<?php echo htmlspecialchars($poi['name']); ?>" 
+                                            class="poi-image">
+                                    <?php else: ?>
+                                        <div class="poi-image" style="background: linear-cgradient(45deg, #3498db, #2c3e50); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                                            <?php
+                                                $icons = [
+                                                    'attraction' => '🏞️',
+                                                    'restaurant' => '🍽️',
+                                                    'accommodation' => '🏨',
+                                                    'cultural' => '🏛️',
+                                                    'historical' => '🏰'
+                                                ];
+                                                echo $icons[$poi['category']] ?? '📍';
+                                            ?>
+                                        </div>
+                                    <?php endif; ?>
+
                                 
                                 <h4><?php echo htmlspecialchars($poi['name']); ?></h4>
                                 <p style="color: #666; font-size: 0.9rem;"><?php echo ucfirst($poi['category']); ?></p>
@@ -533,8 +529,10 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="edit-form">
             <div class="edit-form-content">
                 <h3>Edit Location: <?php echo htmlspecialchars($edit_poi['name']); ?></h3>
-                <form method="POST">
+                <!-- Added enctype for file upload -->
+                <form method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="poi_id" value="<?php echo $edit_poi['id']; ?>">
+                    <input type="hidden" name="image_url" value="<?php echo htmlspecialchars($edit_poi['image_url']); ?>">
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                         <div class="form-group">
@@ -600,9 +598,32 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
                     </div>
                     
+                    <!-- Replaced image URL input with file upload -->
                     <div class="form-group">
-                        <label for="image_url">Image URL</label>
-                        <input type="url" id="image_url" name="image_url" class="form-control" value="<?php echo htmlspecialchars($edit_poi['image_url']); ?>">
+                        <label for="image_upload">Location Image</label>
+                        <div class="image-upload-container">
+                            <?php if ($edit_poi['image_url']): ?>
+                                <div class="current-image">
+                                    <p><strong>Current Image:</strong></p>
+                                    <img src="<?php echo htmlspecialchars($edit_poi['image_url']); ?>" alt="Current image" class="image-preview" id="currentImage">
+                                    <button type="button" class="remove-image-btn" onclick="removeCurrentImage()">Remove Current Image</button>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <div class="image-upload-area" onclick="document.getElementById('image_upload').click()">
+                                <div>📷</div>
+                                <div><strong>Click to upload new image</strong></div>
+                                <div class="upload-text">or drag and drop</div>
+                                <div class="upload-text">JPG, PNG, GIF, WEBP (max 5MB)</div>
+                            </div>
+                            
+                            <input type="file" id="image_upload" name="image_upload" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                            
+                            <div id="imagePreview" style="display: none;">
+                                <p><strong>New Image Preview:</strong></p>
+                                <img id="previewImg" class="image-preview" alt="Preview">
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -657,6 +678,73 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                 window.location.href = 'location-management.php';
             }
         });
+        
+        function previewImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewDiv = document.getElementById('imagePreview');
+                    const previewImg = document.getElementById('previewImg');
+                    previewImg.src = e.target.result;
+                    previewDiv.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function removeCurrentImage() {
+            const currentImageDiv = document.querySelector('.current-image');
+            const hiddenInput = document.querySelector('input[name="image_url"]');
+            
+            if (confirm('Are you sure you want to remove the current image?')) {
+                currentImageDiv.style.display = 'none';
+                hiddenInput.value = '';
+            }
+        }
+        
+        // Drag and drop functionality
+        const uploadArea = document.querySelector('.image-upload-area');
+        const fileInput = document.getElementById('image_upload');
+        
+        if (uploadArea && fileInput) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight(e) {
+                uploadArea.classList.add('dragover');
+            }
+            
+            function unhighlight(e) {
+                uploadArea.classList.remove('dragover');
+            }
+            
+            uploadArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    previewImage(fileInput);
+                }
+            }
+        }
     </script>
 </body>
 </html>
