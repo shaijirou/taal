@@ -9,6 +9,10 @@ define('SITE_NAME', 'Ala Eh! - Taal Tourist Guide');
 define('SITE_URL', 'http://localhost/taal-tourist');
 define('UPLOAD_PATH', 'uploads/');
 
+// AI API Configuration
+// To enable advanced AI responses, get a free API key from: https://makersuite.google.com/app/apikey
+// Then uncomment and set your API key below:
+define('GEMINI_API_KEY', 'AIzaSyCYUccaGutgAXNOeZjK7SZorY5YOXWb7Hc');
 
 // Helper functions
 function isLoggedIn() {

@@ -2,7 +2,9 @@
     <div class="container">
         <div class="header-content">
             <div class="logo">
-                <a href="index.php" style="color: white; text-decoration: none;">Ala Eh! 🌋</a>
+                <a href="#"><img id="logo" src="images/logo.png"></a>
+                <a href="index.php" style="color: white; text-decoration: none;">Ala Eh! </a>
+                
             </div>
             <nav>
                 <ul>

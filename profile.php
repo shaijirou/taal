@@ -19,7 +19,6 @@ if (!isset($_SESSION['role']) && isset($user['role'])) {
     $_SESSION['role'] = $user['role'];
 }
 
-
 // Get user's favorites
 $query = "SELECT p.* FROM points_of_interest p JOIN user_favorites f ON p.id = f.poi_id WHERE f.user_id = ? ORDER BY f.created_at DESC";
 $stmt = $db->prepare($query);
@@ -154,27 +153,55 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profile'])) {
             
             
             <!-- Favorite Places -->
-            <div class="card mt-4">
+            <div class="mt-4">
                 <h3>My Favorite Places (<?php echo count($favorites); ?>)</h3>
                 <?php if (empty($favorites)): ?>
-                    <p>You haven't added any favorites yet. <a href="places.php">Explore places</a> and add some to your favorites!</p>
+                    <div class="card">
+                        <p>You haven't added any favorites yet. <a href="places.php">Explore places</a> and add some to your favorites!</p>
+                    </div>
                 <?php else: ?>
                     <div class="poi-grid">
                         <?php foreach ($favorites as $poi): ?>
                             <div class="poi-card">
                                 <?php if ($poi['image_url']): ?>
                                     <img src="<?php echo htmlspecialchars($poi['image_url']); ?>" alt="<?php echo htmlspecialchars($poi['name']); ?>" class="poi-image">
+                                <?php else: ?>
+                                    <div class="poi-image" style="background: linear-gradient(45deg, #3498db, #2c3e50); display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+                                        <?php
+                                        $icons = [
+                                            'attraction' => '🏞️',
+                                            'restaurant' => '🍽️',
+                                            'accommodation' => '🏨',
+                                            'cultural' => '🏛️',
+                                            'historical' => '🏰'
+                                        ];
+                                        echo $icons[$poi['category']] ?? '📍';
+                                        ?>
+                                    </div>
                                 <?php endif; ?>
                                 <div class="poi-content">
                                     <div class="poi-category"><?php echo ucfirst($poi['category']); ?></div>
-                                    <h4 class="poi-title"><?php echo htmlspecialchars($poi['name']); ?></h4>
+                                    <h3 class="poi-title"><?php echo htmlspecialchars($poi['name']); ?></h3>
                                     <div class="poi-rating">
                                         <?php for ($i = 1; $i <= 5; $i++): ?>
                                             <?php echo $i <= $poi['rating'] ? '⭐' : '☆'; ?>
                                         <?php endfor; ?>
-                                        (<?php echo $poi['rating']; ?>)
+                                        (<?php echo number_format($poi['rating'], 1); ?>)
                                     </div>
-                                    <div class="mt-2">
+                                    <p class="poi-description"><?php echo htmlspecialchars(substr($poi['description'], 0, 120)) . '...'; ?></p>
+                                    <div class="poi-info">
+                                        <p><strong>📍 Address:</strong> <?php echo htmlspecialchars($poi['address']); ?></p>
+                                        <?php if ($poi['opening_hours']): ?>
+                                            <p><strong>🕒 Hours:</strong> <?php echo htmlspecialchars($poi['opening_hours']); ?></p>
+                                        <?php endif; ?>
+                                        <?php if ($poi['price_range']): ?>
+                                            <p><strong>💰 Price Range:</strong> <?php echo htmlspecialchars($poi['price_range']); ?></p>
+                                        <?php endif; ?>
+                                        <?php if ($poi['contact_info']): ?>
+                                            <p><strong>📞 Contact:</strong> <?php echo htmlspecialchars($poi['contact_info']); ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="poi-buttons">
                                         <a href="poi-details.php?id=<?php echo $poi['id']; ?>" class="btn btn-primary">View Details</a>
                                         <a href="map.php?poi=<?php echo $poi['id']; ?>" class="btn btn-success">Show on Map</a>
                                     </div>

@@ -133,7 +133,8 @@ $categories = $categoryStmt->fetchAll(PDO::FETCH_COLUMN);
                                         <p><strong>📞 Contact:</strong> <?php echo htmlspecialchars($poi['contact_info']); ?></p>
                                     <?php endif; ?>
                                 </div>
-                                <div class="mt-2" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <!-- Updated button container for consistent alignment -->
+                                <div class="poi-buttons">
                                     <a href="poi-details.php?id=<?php echo $poi['id']; ?>" class="btn btn-primary">View Details</a>
                                     <a href="map.php?poi=<?php echo $poi['id']; ?>" class="btn btn-success">Show on Map</a>
                                     <?php if (isLoggedIn()): ?>

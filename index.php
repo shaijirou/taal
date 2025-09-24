@@ -27,7 +27,7 @@ $featured_pois = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <!-- Hero Section -->
             <section class="hero mb-4">
                 <div class="card text-center">
-                    <h1>Welcome to Ala Eh! 🌋</h1>
+                    <h1>Welcome to Ala Eh! </h1>
                     <p class="mb-3">Your intelligent guide to exploring the beautiful Municipality of Taal, Batangas. Discover hidden gems, local cuisine, and rich cultural heritage with our AI-powered tourism assistant.</p>
                     <div>
                         <a href="map.php" class="btn btn-primary">Explore Map</a>
@@ -43,10 +43,10 @@ $featured_pois = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <section class="features mb-4">
                 <h2 class="text-center mb-3">Why Choose Ala Eh?</h2>
                 <div class="poi-grid">
-                    <div class="card">
+                    <!-- <div class="card">
                         <h3>🗺️ Interactive Map</h3>
                         <p>Real-time GPS navigation with accurate directions to all tourist destinations in Taal.</p>
-                    </div>
+                    </div> -->
                     <div class="card">
                         <h3>🤖 AI Tour Guide</h3>
                         <p>Chat with our intelligent assistant for personalized recommendations and local insights.</p>
@@ -94,7 +94,8 @@ $featured_pois = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <p><strong>Price Range:</strong> <?php echo htmlspecialchars($poi['price_range']); ?></p>
                                     <?php endif; ?>
                                 </div>
-                                <div class="mt-2">
+                                <!-- Updated button container for consistent alignment -->
+                                <div class="poi-buttons">
                                     <a href="poi-details.php?id=<?php echo $poi['id']; ?>" class="btn btn-primary">View Details</a>
                                     <a href="map.php?poi=<?php echo $poi['id']; ?>" class="btn btn-success">Show on Map</a>
                                 </div>
