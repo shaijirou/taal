@@ -12,7 +12,7 @@ define('UPLOAD_PATH', 'uploads/');
 // AI API Configuration
 // To enable advanced AI responses, get a free API key from: https://makersuite.google.com/app/apikey
 // Then uncomment and set your API key below:
-define('GEMINI_API_KEY', 'AIzaSyCYUccaGutgAXNOeZjK7SZorY5YOXWb7Hc');
+define('GEMINI_API_KEY', '');
 
 // Helper functions
 function isLoggedIn() {
