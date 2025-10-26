@@ -14,6 +14,7 @@ define('UPLOAD_PATH', 'uploads/');
 // Then uncomment and set your API key below:
 define('GEMINI_API_KEY', '');
 
+
 // Helper functions
 function isLoggedIn() {
     return isset($_SESSION['user_id']);
