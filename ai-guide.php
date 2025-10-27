@@ -21,8 +21,6 @@ function getAIResponse($message) {
                     return "Perfect! 🏛️ Here’s a historical site worth visiting: <a href='places.php?search=&category=historical' target='_blank'>View Historical Site</a>";
                 case 'lomi':
                     return "You’ll love this spot for Lomi! 🍜 <a href='poi-details.php?id=6' target='_blank'>Click here for details.</a>";
-                case 'activities':
-                    return "Here are some exciting activities you can enjoy in Taal! 🎉 <a href='activities.php' target='_blank'>View Activities</a>";
                 case 'map':
                     return "Here's the map of Taal with key landmarks highlighted! 🗺️ <a href='map.php' target='_blank'>View Map</a>";
                 default:
@@ -53,7 +51,7 @@ function getEnhancedLocalResponse($message) {
           
         'food' => "🍽️ Must-try dishes in Taal include Lomi, Bulalo, and Kapeng Barako! Would you like directions to the best restaurant?",
         
-        'weather' => "🌤️ Best time to visit is November to April (dry season). Do you want me to recommend activities for this season?",
+        'weather' => "🌤️ Best time to visit is November to April (dry season). ",
         
          'how to get' => "You can get to Taal via bus to Lemery then a short tricycle ride. Would you like a step-by-step route guide?",
         'coffee' => "Kapeng Barako is a local favorite! ☕ Would you like me to recommend a great café to try it?",
@@ -80,8 +78,6 @@ function getEnhancedLocalResponse($message) {
                 $_SESSION['chat_context'] = 'hotel';
             } elseif ($keyword === 'lomi') {
                 $_SESSION['chat_context'] = 'lomi';
-            } elseif ($keyword === 'weather') {
-                $_SESSION['chat_context'] = 'activities';
             } elseif ($keyword === 'volcano') {
                 $_SESSION['chat_context'] = 'volcano';
             } elseif ($keyword === 'history' || $keyword === 'historical site' || $keyword === 'place') {

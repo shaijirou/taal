@@ -270,20 +270,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isLoggedIn() && isset($_POST['submit
             margin-top: 1rem;
         }
         
-        .breadcrumb {
-            margin-bottom: 1rem;
-            color: var(--text-muted);
-            font-size: 0.875rem;
-        }
-        
-        .breadcrumb a {
-            color: var(--secondary);
-            text-decoration: none;
-        }
-        
-        .breadcrumb a:hover {
-            text-decoration: underline;
-        }
         
         @media (max-width: 768px) {
             .poi-info-grid {
@@ -309,16 +295,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isLoggedIn() && isset($_POST['submit
 <body>
     <?php include 'includes/header.php'; ?>
     
-    <main>
+    <main style="padding-top: 80px;">
         <div class="container">
-             <!-- Added breadcrumb navigation  -->
-            <div class="breadcrumb">
-                <a href="index.php">Home</a> > 
-                <a href="places.php">Places</a> > 
-                <a href="places.php?category=<?php echo $poi['category']; ?>"><?php echo ucfirst($poi['category']); ?></a> > 
-                <?php echo htmlspecialchars($poi['name']); ?>
-            </div>
-            
              <!-- Enhanced POI header with better layout  -->
             <div class="poi-header">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
@@ -347,7 +325,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isLoggedIn() && isset($_POST['submit
                             </button>
                         <?php endif; ?>
                         <a href="map.php?poi=<?php echo $poi['id']; ?>" class="btn btn-success">📍 Show on Map</a>
-                        <button class="btn btn-primary" onclick="shareLocation()">📤 Share</button>
+                       
                     </div>
                 </div>
             </div>
@@ -428,13 +406,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isLoggedIn() && isset($_POST['submit
              <!-- Enhanced map section  -->
             <div class="card">
                 <h3 style="margin-bottom: 1.5rem;">Location & Directions</h3>
-                <div id="poi-map" style="height: 400px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);"></div>
+                <div id="poi-map" style="height: 400px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); margin-top: 1rem; margin-bottom: 1rem; position: relative; z-index: 0;"></div>
                 <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                    <button class="btn btn-primary" onclick="getDirections()">🗺️ Get Directions</button>
-                    <button class="btn btn-success" onclick="openInMaps()">📱 Open in Maps App</button>
+                    <button class="btn btn-success" onclick="getDirections()">📱 Get Directions</button>
                 </div>
             </div>
-            
+
+            <script>
+                // Prevent the map from being hidden under a fixed header by dynamically
+                // measuring the header height and adding top spacing to the map container.
+                (function() {
+                    var mapEl = document.getElementById('poi-map');
+                    if (!mapEl) return;
+
+                    // Try common header selectors used in themes
+                    var header = document.querySelector('header, .navbar, #header, .site-header');
+                    var headerHeight = header ? header.getBoundingClientRect().height : 0;
+
+                    // Add some extra gap so the map isn't flush against the navbar
+                    var gap = 12;
+
+                    // Apply margin to push the map below the header
+                    mapEl.style.marginTop = (headerHeight + gap) + 'px';
+
+                    // Ensure the header appears above the map if the header uses z-index
+                    mapEl.style.zIndex = 0;
+                    mapEl.style.position = 'relative';
+
+                    // When the page finishes loading, invalidate the Leaflet map size
+                    // so tiles and controls are rendered correctly after the layout change.
+                    window.addEventListener('load', function() {
+                        setTimeout(function() {
+                            if (window.map && typeof window.map.invalidateSize === 'function') {
+                                window.map.invalidateSize();
+                            }
+                        }, 250);
+                    });
+                })();
+            </script>
+
              <!-- Enhanced reviews section with statistics  -->
             <div class="card">
                 <h3 style="margin-bottom: 1.5rem;">Reviews & Ratings</h3>
@@ -637,24 +647,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isLoggedIn() && isset($_POST['submit
             window.open(url, '_blank');
         }
         
-        function shareLocation() {
-            const url = window.location.href;
-            const title = '<?php echo addslashes($poi['name']); ?>';
-            const text = `Check out ${title} in Taal, Batangas!`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: title,
-                    text: text,
-                    url: url
-                });
-            } else {
-                // Fallback to copying URL
-                navigator.clipboard.writeText(url).then(() => {
-                    alert('Location URL copied to clipboard!');
-                });
-            }
-        }
         
         // Add to favorites functionality
         document.querySelector('.add-favorite')?.addEventListener('click', function() {

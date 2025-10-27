@@ -36,11 +36,20 @@ if (isset($_GET['poi'])) {
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
     <style>
+        /* Added margin-top to prevent header overlap */
+        main {
+            margin-top: 0;
+            padding-top: 3rem;
+        }
+
         #map { 
             height: 600px; 
             width: 100%; 
             border-radius: var(--radius-xl);
             box-shadow: var(--shadow-lg);
+            /* Ensure map stays below header */
+            position: relative;
+            z-index: 1;
         }
         
         .map-controls {
@@ -70,6 +79,9 @@ if (isset($_GET['poi'])) {
             margin-top: 1.5rem;
             border: 1px solid var(--border-light);
             display: none;
+            /* Ensure directions panel is above map */
+            position: relative;
+            z-index: 10;
         }
         
         .directions-panel.active {
@@ -243,7 +255,7 @@ if (isset($_GET['poi'])) {
             </div>
             
              <!-- Map Container with Loading Overlay  -->
-            <div style="position: relative;">
+            <div style="position: relative; margin-bottom: 2rem;">
                 <div id="map"></div>
                 <div id="loading-overlay" class="loading-overlay hidden">
                     <div style="text-align: center;">
@@ -261,10 +273,16 @@ if (isset($_GET['poi'])) {
                 </div>
                 <div id="directions-summary" style="margin-bottom: 1rem;"></div>
                 <div id="directions-steps" class="directions-steps"></div>
+                <!-- Added Google Maps button -->
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-light);">
+                    <button id="open-google-maps" class="btn btn-primary" style="width: 100%;">
+                        <span>🗺️ Open in Google Maps</span>
+                    </button>
+                </div>
             </div>
             
              <!-- POI List  -->
-            <div class="card mt-3">
+            <div class="card">
                 <h3>Points of Interest</h3>
                 <div id="poi-list" class="poi-grid">
                     <?php foreach ($pois as $poi): ?>
@@ -304,11 +322,12 @@ if (isset($_GET['poi'])) {
                                             data-id="<?php echo $poi['id']; ?>">
                                         Show on Map
                                     </button>
+                                    <!-- Get Directions button now always visible and redirects to Google Maps -->
                                     <button class="btn btn-success get-directions" 
                                             data-lat="<?php echo $poi['latitude']; ?>" 
                                             data-lng="<?php echo $poi['longitude']; ?>" 
                                             data-name="<?php echo htmlspecialchars($poi['name']); ?>"
-                                            style="display: none;">
+                                            data-address="<?php echo htmlspecialchars($poi['address']); ?>">
                                         Get Directions
                                     </button>
                                     <a href="poi-details.php?id=<?php echo $poi['id']; ?>" class="btn btn-warning">Details</a>
@@ -332,6 +351,7 @@ if (isset($_GET['poi'])) {
         let poiLayerGroup = null;
         let routingControl = null;
         let userMarker = null;
+        let currentDestination = null;
 
         // POI data from PHP
         const pois = <?php echo json_encode($pois); ?>;
@@ -431,7 +451,8 @@ if (isset($_GET['poi'])) {
                     ${distanceInfo}
                     <div class="actions">
                         <a href="poi-details.php?id=${poi.id}" class="btn btn-primary" target="_blank">View Details</a>
-                        ${userLocation ? `<button class="btn btn-success" onclick="getDirections(${poi.latitude}, ${poi.longitude}, '${poi.name}')">Get Directions</button>` : ''}
+                        <!-- Added Google Maps button in popup -->
+                        <button class="btn btn-success" onclick="openGoogleMaps(${poi.latitude}, ${poi.longitude}, '${poi.name.replace(/'/g, "\\'")}')">Get Directions</button>
                     </div>
                 </div>
             `;
@@ -526,11 +547,25 @@ if (isset($_GET['poi'])) {
             });
         }
 
+        function openGoogleMaps(destLat, destLng, destName) {
+            if (userLocation) {
+                // Open Google Maps with directions from user location to destination
+                const url = `https://www.google.com/maps/dir/${userLocation.lat},${userLocation.lng}/${destLat},${destLng}`;
+                window.open(url, '_blank');
+            } else {
+                // Open Google Maps with just the destination
+                const url = `https://www.google.com/maps/search/${destLat},${destLng}`;
+                window.open(url, '_blank');
+            }
+        }
+
         function getDirections(destLat, destLng, destName) {
             if (!userLocation) {
                 alert('Please get your location first!');
                 return;
             }
+
+            currentDestination = { lat: destLat, lng: destLng, name: destName };
 
             showLoading(true);
 
@@ -609,6 +644,7 @@ if (isset($_GET['poi'])) {
             
             document.getElementById('directions-panel').classList.remove('active');
             document.getElementById('clear-directions').style.display = 'none';
+            currentDestination = null;
         }
 
         function showLoading(show) {
@@ -704,6 +740,12 @@ if (isset($_GET['poi'])) {
             document.getElementById('clear-directions').addEventListener('click', clearDirections);
             document.getElementById('close-directions').addEventListener('click', clearDirections);
             
+            document.getElementById('open-google-maps').addEventListener('click', function() {
+                if (currentDestination) {
+                    openGoogleMaps(currentDestination.lat, currentDestination.lng, currentDestination.name);
+                }
+            });
+            
             document.getElementById('category-filter').addEventListener('change', (e) => {
                 filterPOIs(e.target.value);
             });
@@ -719,6 +761,11 @@ if (isset($_GET['poi'])) {
                     const name = e.target.dataset.name;
                     const poiId = e.target.dataset.id;
                     showPOIOnMap(lat, lng, name, poiId);
+                    
+                    const mapContainer = document.getElementById('map');
+                    setTimeout(() => {
+                        mapContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300); // Small delay to ensure map is updated first
                 });
             });
 
@@ -727,7 +774,7 @@ if (isset($_GET['poi'])) {
                     const lat = parseFloat(e.target.dataset.lat);
                     const lng = parseFloat(e.target.dataset.lng);
                     const name = e.target.dataset.name;
-                    getDirections(lat, lng, name);
+                    openGoogleMaps(lat, lng, name);
                 });
             });
         });
