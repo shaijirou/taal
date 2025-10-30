@@ -25,7 +25,7 @@ if (isLoggedIn()) {
 function getAIResponse($message, $language = 'en') {
     $message = trim(strtolower($message));
 
-    $yes_responses = [ 'oo sige','sige lang','oo ngani','pwede','yes', 'yep', 'yeah', 'sure', 'okay', 'of course', 'please', 'absolutely', 'definitely', 'affirmative', 'y', 'surely', 'certainly', 'indeed', 'why not', 'by all means', 'ok', 'alright', 'roger that', 'yup', 'aye', 'totally', 'gladly', 'willingly', 'positively', 'undoubtedly', 'unquestionably', 'beyond doubt', 'without a doubt', 'sure thing', 'you bet', 'for sure', 'most definitely', 'certainly so', 'beyond question', 'indubitably', 'assuredly', 'beyond any doubt', 'without question', 'beyond peradventure', 'yes indeed', 'yes sir', 'yes ma\'am', 'affirmatively', 'agreed', 'agreedly', 'by all means', 'clearly', 'evidently', 'manifestly', 'plainly', 'undeniably', 'unmistakably','oo','uh-huh','sige ba', 'sige', 'go ahead', 'let\'s do it', 'i would like that', 'i\'d like that','pwede','oo nga', 'oo naman', 'siyempre', 'talaga', 'tama', 'iyan', 'iyan nga', 'iyan naman', 'gusto ko', 'gusto natin', 'gusto mo', 'sang-ayon ako', 'sang-ayon tayo'];
+    $yes_responses = [ 'oo sige','sige lang','oo ngani','pwede','yes', 'yep', 'yeah', 'sure', 'okay', 'of course', 'please', 'absolutely', 'definitely', 'affirmative', 'y', 'surely', 'certainly', 'indeed', 'why not', 'by all means', 'ok', 'alright', 'roger that', 'yup', 'aye', 'totally', 'gladly', 'willingly', 'positively', 'undoubtedly', 'unquestionably', 'beyond doubt', 'without a doubt', 'sure thing', 'you bet', 'for sure', 'most definitely', 'certainly so', 'beyond question', 'indubitably', 'assuredly', 'beyond any doubt', 'without question', 'beyond peradventure', 'yes indeed', 'yes sir', 'yes ma\'am', 'affirmatively', 'agreed', 'agreedly', 'by all means', 'clearly', 'evidently', 'manifestly', 'plainly', 'undeniably', 'unmistakably','oo','uh-huh','sige ba', 'sige', 'go ahead', 'let\'s do it', 'i would like that', 'i\'d like that','pwede','oo nga', 'oo naman', 'siyempre', 'talaga', 'tama', 'iyan', 'iyan nga', 'iyan naman', 'gusto ko', 'gusto natin', 'gusto mo', 'sang-ayon ako', 'sang-ayon tayo', 'gutom na ako'];
     
     if (in_array($message, $yes_responses)) {
         if (isset($_SESSION['chat_context'])) {
@@ -47,8 +47,8 @@ function getAIResponse($message, $language = 'en') {
                         : "Perfect! 🏛️ <a href='places.php?search=&category=historical' target='_blank'>Explore our historical sites and heritage locations.</a>";
                 case 'lomi':
                     return ($language === 'fil')
-                        ? "Siguradong masarap! 🍜 <a href='poi-details.php?id=6' target='_blank'>Tingnan ang pinakamahusay na Lomi spots sa Taal.</a>"
-                        : "You're in for a treat! 🍜 <a href='poi-details.php?id=6' target='_blank'>Check out the best Lomi spots in Taal.</a>";
+                        ? "Siguradong masarap! 🍜 <a href='places.php?search=lomi&category=' target='_blank'>Tingnan ang pinakamahusay na Lomi spots sa Taal.</a>"
+                        : "You're in for a treat! 🍜 <a href='places.php?search=lomi&category=' target='_blank'>Check out the best Lomi spots in Taal.</a>";
                 case 'map':
                     return ($language === 'fil')
                         ? "Narito ang mapa ng Taal na may mga pangunahing landmark! 🗺️ <a href='map.php' target='_blank'>Tingnan ang Interactive Map</a>"
@@ -78,7 +78,7 @@ function getEnhancedLocalResponse($message, $language = 'en') {
         'bulalo' => ['bulalo', 'sabaw ng baka', 'baka soup'],
         'food' => ['food', 'masarap', 'delicious'],
         'kapeng barako' => ['kapeng barako', 'kape', 'barako'],
-        'restaurant' => ['restaurant', 'kainan', 'restawran', 'kain', 'pagkain', 'almusal', 'tanghalian', 'hapunan','ulam','menu'],
+        'restaurant' => ['restaurant', 'kainan', 'restawran', 'kain', 'pagkain', 'almusal', 'tanghalian', 'hapunan','ulam','menu', 'kumain'],
         'accommodation' => ['accommodation','hotel','guesthouse','inn','homestay','stay','matutuluyan','tutuluyan','kwarto'],
         'history' => ['history', 'kasaysayan', 'historical', 'makasaysayan', 'pamana'],
         'historical site' => ['historical site', 'makasaysayang lugar', 'lumang gusali'],
@@ -86,6 +86,9 @@ function getEnhancedLocalResponse($message, $language = 'en') {
         'weather' => ['weather', 'panahon', 'ulan', 'init', 'klima', 'best time'],
         'transportation' => ['transportation', 'sasakyan', 'biyahe', 'commute', 'paano pumunta', 'direksyon','go to taal','pumunta sa taal','how to get to taal'],
         'bus' => ['bus'],
+        'jeep' => ['jeep', 'jeepney'],
+        'manila' => ['manila', 'maynila'],
+        'batangas' => ['batangas'],
         'map' => ['map', 'mapa', 'lokasyon', 'direksyon', 'gabay'],
         'attraction' => ['lugar', 'destination','pumunta','puntahan', 'pasyalan','place','attraction', 'attractions', 'tourist spot', 'tanawin'],
         'explore' => ['explore', 'tuklasin', 'discover', 'ikot'],
@@ -102,8 +105,8 @@ function getEnhancedLocalResponse($message, $language = 'en') {
     // ✅ Define responses for both EN & FIL
     $responses = [
     'hello' => [
-        'en' => "Hello! 👋 Welcome to Taal, Batangas — the Heritage Town of the Philippines! I'm your friendly Chatbot guide, ready to help you discover amazing places, and delicious food. What would you like to explore today?",
-        'fil' => "Halo! 👋 Maligayang pagdating sa Taal, Batangas — ang Heritage Town ng Pilipinas! Ako ang iyong Chatbot guide na handang tumulong sa’yo tuklasin ang magagandang lugar, at masasarap na pagkain. Ano ang gusto mong tuklasin ngayon?"
+        'en' => "Hello! 👋 Welcome to Taal, Batangas — the Heritage Town of the Philippines! I'm your friendly Chatbot guide, ready to help you discover amazing places, and delicious food here in taal. What would you like to explore today?",
+        'fil' => "Halo! 👋 Maligayang pagdating sa Taal, Batangas — ang Heritage Town ng Pilipinas! Ako ang iyong Chatbot guide na handang tumulong sa’yo tuklasin ang magagandang lugar, at masasarap na pagkain sa taal. Ano ang gusto mong tuklasin ngayon?"
     ],
     'tanginamo' => [
         'en' => "I'm here to help you explore Taal in a friendly and respectful manner. Let's keep our conversation positive and enjoyable! 😊",
@@ -115,8 +118,8 @@ function getEnhancedLocalResponse($message, $language = 'en') {
         'fil' => "🏛️ Parang bumalik ka sa nakaraan sa Taal Heritage Town! Makikita mo rito ang mga bahay na pamana noong panahon ng mga Espanyol, makasaysayang gusali, at mga kalsadang bato. Gusto mo bang irekomenda ko ang mga dapat mong bisitahin?"
     ],
     'basilica' => [
-        'en' => "⛪ The Taal Basilica, officially the Minor Basilica of St. Martin de Tours, is the largest Catholic church in Asia. It’s a breathtaking site overlooking Taal Lake — full of history and devotion.",
-        'fil' => "⛪ Ang Taal Basilica o Minor Basilica of St. Martin de Tours ang pinakamalaking simbahanang katolika sa buong Asya. Napakaganda ng tanawin dito lalo na’t tanaw ang Taal Lake — puno ng kasaysayan at pananampalataya."
+        'en' => "⛪ The Taal Basilica, officially the Minor Basilica of St. Martin de Tours, is the largest Catholic church in Asia. It’s a breathtaking site — full of history and devotion.",
+        'fil' => "⛪ Ang Taal Basilica o Minor Basilica of St. Martin de Tours ang pinakamalaking simbahanang katolika sa buong Asya. Napakaganda ng tanawin dito  — puno ng kasaysayan at pananampalataya."
     ],
     'food' => [
         'en' => "🍽️ Taal is a food lover’s paradise! From the famous Lomi and Bulalo to Kapeng Barako, there’s something to satisfy every craving. What local dish would you like to know more about?",
@@ -127,8 +130,8 @@ function getEnhancedLocalResponse($message, $language = 'en') {
         'fil' => "🍜 Dapat mong matikman ang Taal Lomi! Malapot, malasa, at punong-puno ng sahog — perpekto sa malamig na panahon o pagkatapos mamasyal. Gusto mo bang sabihin ko kung saan pinakamasarap kumain nito?"
     ],
     'bulalo' => [
-        'en' => "🍲 Bulalo is a Batangueño classic — rich beef broth with tender bone marrow that warms your soul! Perfect with rice and a view of Taal Lake.",
-        'fil' => "🍲 Ang Bulalo ay klasikong putahe ng mga Batangueño — mainit na sabaw ng baka na may laman at utak-buto, siguradong pampainit ng katawan! Mas masarap lalo kapag may kasamang tanawin ng Taal Lake."
+        'en' => "🍲 Bulalo is a Batangueño classic — rich beef broth with tender bone marrow that warms your soul! Perfect with rice.",
+        'fil' => "🍲 Ang Bulalo ay klasikong putahe ng mga Batangueño — mainit na sabaw ng baka na may laman at utak-buto, siguradong pampainit ng katawan!"
     ],
     'kapeng barako' => [
         'en' => "☕ Kapeng Barako is the pride of Batangas! Strong, bold, and aromatic — it’s the perfect drink to start your day, best paired with local delicacies like panutsa or suman.",
@@ -159,16 +162,20 @@ function getEnhancedLocalResponse($message, $language = 'en') {
         'fil' => "🌤️ Pinakamainam bumisita sa Taal mula Nobyembre hanggang Abril — maganda ang panahon at presko ang simoy ng hangin! Gusto mo bang malaman ang lagay ng panahon ngayon?"
     ],
     'transportation' => [
-        'en' => "🚌 Getting to Taal is easy! From Manila: Take a bus to Lemery or Talisay (about 1.5-2 hours), then a short tricycle ride to Taal town. Alternatively, drive via SLEX to Tagaytay, then head to Taal.   ",
-            'fil' => "🚌 Madali ang pagpunta sa Taal! Mula sa Manila: Sumakay ng bus papunta sa Lemery o Talisay (humigit-kumulang 1.5-2 oras), pagkatapos ay maikling tricycle ride papunta sa Taal town. Bilang alternatibo, magmaneho via SLEX papunta sa Tagaytay, pagkatapos ay pumunta sa Taal."
+        'en' => "🚌 Getting to Taal is easy! Are you from Manila or Batangas? ",
+            'fil' => "🚌 Madali ang pagpunta sa Taal! Ikaw ba ay galing sa Manila o Batangas?"
         ],
-    'bus' => [
+    'manila' => [
     'en' => "🚌 From Manila, you can take a bus bound for Lemery, Batangas — that’s the closest terminal to Taal. Bus companies like JAM Liner and DLTB Co. have regular trips from Cubao, Buendia, and LRT Gil Puyat. Once you arrive in Lemery, you can ride a short tricycle trip to Taal town proper.",
     'fil' => "🚌 Mula Manila, sumakay ng bus papuntang Lemery, Batangas — iyon ang pinakamalapit na terminal sa Taal. May mga biyahe ang JAM Liner at DLTB Co. mula Cubao, Buendia, at LRT Gil Puyat. Pagdating mo sa Lemery, sumakay ng tricycle papunta sa bayan ng Taal o bumaba sa may Jollibee at mula doon ay maghintay ng Jeep na dadaan papuntang Lemery at bumaba sa mismong harap ng simbahan ng Taal."
-],
+    ],
+    'batangas' => [
+    'en' => "🚌 From Batangas City, you can take a bus or van heading to Lemery or directly to Taal. Several bus operators like Sunrays Bus and local van services operate regular trips from Batangas City Terminal. The journey takes approximately 30-45 minutes. Alternatively, you can take a jeepney from Batangas City to Lemery, then a short tricycle ride to Taal town proper or directly to the Taal Church.",
+    'fil' => "🚌 Mula sa Lungsod ng Batangas, sumakay ng bus o van papuntang Lemery o direkta sa Taal. May mga regular na biyahe ang Sunrays Bus at iba pang local van services mula sa Batangas City Terminal. Ang biyahe ay tumatagal ng humigit-kumulang 30-45 minuto. Bilang alternatibo, sumakay ng jeepney mula Batangas City papunta Lemery, pagkatapos ay tricycle papunta sa bayan ng Taal o direktang bumaba sa simbahan ng Taal"
+    ],
     'attraction' => [
-        'en' => "🌟 Taal is brimming with attractions — from the majestic Basilica, charming heritage houses, to the serene Taal Lake. What type of attractions are you interested in?",
-        'fil' => "🌟 Puno ang Taal ng mga pasyalan — mula sa napakagandang Basilica, mga makasaysayang bahay, hanggang sa tahimik na Taal Lake. Anong klaseng pasyalan ang gusto mong tuklasin?"
+        'en' => "🌟 Taal is brimming with attractions — from the majestic Basilica, charming heritage houses. What type of attractions are you interested in?",
+        'fil' => "🌟 Puno ang Taal ng mga pasyalan — mula sa napakagandang Basilica, mga makasaysayang bahay. Anong klaseng pasyalan ang gusto mong tuklasin?"
     ],  
     'map' => [
         'en' => "🗺️ I can show you a detailed map of Taal’s landmarks, restaurants, and tourist spots. Would you like me to open it for you?",
