@@ -99,7 +99,7 @@ function getEnhancedLocalResponse($message, $language = 'en') {
         'suggest' => ['suggest', 'suhestiyon', 'advise'],
         'pera' => ['pera', 'money', 'budget', 'gastos', 'halaga', 'cost', 'price', 'affordable', 'murang', 'how much', 'magkano'],
         'hello' => ['hello', 'hi', 'kumusta', 'kamusta', 'halo', 'hey'],
-        'tanginamo' => ['tanginamo', 'putangina', 'pota', 'gago', 'ulol', 'tanga', 'bobo', 'tarantado', 'demonyo', 'hayop', 'pucha', 'putang ina', 'leche', 'anak ng puta', 'pakshet', 'fuck you','bitch','idiot','ulol','fuck']
+        'tanginamo' => ['tanginamo', 'putangina','putanginamo','inutil', 'pota', 'gago', 'ulol', 'tanga', 'bobo', 'tarantado', 'demonyo', 'hayop', 'pucha', 'putang ina', 'leche', 'anak ng puta', 'pakshet', 'fuck you','bitch','idiot','ulol','fuck']
     ];
 
     // ✅ Define responses for both EN & FIL
@@ -266,9 +266,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['message'])) {
         
         .language-btn {
             padding: 0.5rem 1rem;
-            border: 2px solid #007bff;
+            border: 1px solid rgba(229, 212, 177, 1);
             background-color: white;
-            color: #007bff;
+            color: #7b3e19;
             border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
@@ -276,13 +276,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['message'])) {
         }
         
         .language-btn.active {
-            background-color: #007bff;
-            color: white;
+            background-color: #7b3e19;
+            color: #fffaf3;
         }
         
         .language-btn:hover {
-            background-color: #007bff;
-            color: white;
+            background-color: #fffaf3;
+            color: #7b3e19;
         }
     </style>
 </head>
@@ -340,7 +340,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['message'])) {
             </div>
             
             <div class="card mt-3">
-                <h3><?php echo $_SESSION['chatbot_language'] === 'fil' ? 'Mga Popular na Tanong' : 'Popular Questions'; ?></h3>
+                <h2><?php echo $_SESSION['chatbot_language'] === 'fil' ? 'Mga Popular na Tanong' : 'Popular Questions'; ?></h2>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem;">
                     <?php 
                         $questions = $_SESSION['chatbot_language'] === 'fil' ? [

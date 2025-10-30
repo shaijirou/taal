@@ -94,21 +94,22 @@ $activity_summary = $summary_stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Activity History - <?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
+     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet">
     <style>
        
     </style>
 </head>
 <body>
-    <header>
+     <header>
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <a href="../index.php" style="color: white; text-decoration: none;">Ala Eh! Admin 🔧</a>
+                    <a href="../index.php" style="color: #7b3e19; text-decoration: none;">Ala Eh! Admin 🔧</a>
                 </div>
                 <nav>
-                    <ul>
-                        <li><a href="index.php">Dashboard</a></li>
-                         <li><a href="analytics.php">Analytics</a></li>
+                    <ul >
+                        <li style="font-size: 16px;"><a href="index.php">Dashboard</a></li>
+                        <li><a href="analytics.php">Analytics</a></li>
                         <li><a href="user-history.php">User History</a></li>
                         <li><a href="location-management.php">Location Management</a></li>
                         <li><a href="../index.php">View Site</a></li>

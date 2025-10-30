@@ -1,9 +1,12 @@
+
+
+ <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet">
 <header>
     <div class="container">
         <div class="header-content">
             <div class="logo">
                 <a href="#"><img id="logo" src="images/logo.png"></a>
-                <a href="index.php" style="color: white; text-decoration: none;">Ala Eh! </a>
+                <a href="index.php" style=" color: #7b3e19; text-decoration: none;">Ala Eh! </a>
                 
             </div>
             <nav>

@@ -153,7 +153,9 @@ $geographic_chart_data = json_encode($geographic_data);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analytics Dashboard - <?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
+     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
        
     </style>
@@ -163,11 +165,11 @@ $geographic_chart_data = json_encode($geographic_data);
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <a href="../index.php" style="color: white; text-decoration: none;">Ala Eh! Admin 🔧</a>
+                    <a href="../index.php" style="color: #7b3e19; text-decoration: none;">Ala Eh! Admin 🔧</a>
                 </div>
                 <nav>
-                    <ul>
-                        <li><a href="index.php">Dashboard</a></li>
+                    <ul >
+                        <li style="font-size: 16px;"><a href="index.php">Dashboard</a></li>
                         <li><a href="analytics.php">Analytics</a></li>
                         <li><a href="user-history.php">User History</a></li>
                         <li><a href="location-management.php">Location Management</a></li>
