@@ -11,7 +11,7 @@
                     <li><a href="index.php">Home</a></li>
                     <li><a href="map.php">Map</a></li>
                     <li><a href="places.php">Places</a></li>
-                    <li><a href="ai-guide.php">AI Guide</a></li>
+                    <li><a href="ai-guide.php">Chatbot Guide</a></li>
                     <?php if (isLoggedIn()): ?>
                         <li><a href="profile.php">Profile</a></li>
                         <?php if (getUserRole() === 'admin'): ?>

@@ -28,10 +28,10 @@ $featured_pois = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <section class="hero mb-4">
                 <div class="card text-center">
                     <h1>Welcome to Ala Eh! </h1>
-                    <p class="mb-3">Your intelligent guide to exploring the beautiful Municipality of Taal, Batangas. Discover hidden gems, local cuisine, and rich cultural heritage with our AI-powered tourism assistant.</p>
+                    <p class="mb-3">Your intelligent guide to exploring the beautiful Municipality of Taal, Batangas. Discover hidden gems, local cuisine, and rich cultural heritage with our ChatBot tourism assistant.</p>
                     <div>
                         <a href="map.php" class="btn btn-primary">Explore Map</a>
-                        <a href="ai-guide.php" class="btn btn-success">Chat with AI Guide</a>
+                        <a href="ai-guide.php" class="btn btn-success">Chat with ChatBot Guide</a>
                         <?php if (!isLoggedIn()): ?>
                             <a href="register.php" class="btn btn-warning">Get Started</a>
                         <?php endif; ?>
@@ -48,7 +48,7 @@ $featured_pois = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <p>Real-time GPS navigation with accurate directions to all tourist destinations in Taal.</p>
                     </div> -->
                     <div class="card">
-                        <h3>🤖 AI Tour Guide</h3>
+                        <h3>🤖 ChatBot Tour Guide</h3>
                         <p>Chat with our intelligent assistant for personalized recommendations and local insights.</p>
                     </div>
                     <div class="card">
