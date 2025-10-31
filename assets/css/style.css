@@ -937,6 +937,7 @@ main {
   margin-bottom: 2rem;
 }
 
+/* 
 .stat-card {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -944,7 +945,8 @@ main {
   border-radius: 12px;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+
+} */
 
 .stat-card h3 {
   font-size: 2rem;
@@ -1140,13 +1142,17 @@ main {
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
+
 }
 
 .stat-card {
-  background: #f8f9fa;
+  background-color: #7b3e19;
+  border: 1px solid rgba(229, 212, 177, 1);
+  color: #fffaf3;
   padding: 1rem;
   border-radius: 8px;
   text-align: center;
+  /* border-color: 1px solid #7b3e19; */
 }
 
 .edit-form {

@@ -230,7 +230,7 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Location Management - <?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
      <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> -->
     <style>
         /* Added styles for image upload and preview */
         .image-upload-container {
@@ -325,29 +325,29 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
             
             <!-- Statistics -->
             <div class="stats-grid">
-                <div class="stat-card">
-                    <h3 style="color: #3498db;"><?php echo $stats['total_pois']; ?></h3>
-                    <p style="color: #666;">Total Locations</p>
+                <div class="stat-card" style="border-color: 1px solid #7b3e19;">
+                    <h3 style="color: #fffaf3;"><?php echo $stats['total_pois']; ?></h3>
+                    <p style="color: #fffaf3;">Total Locations</p>
                 </div>
                 <div class="stat-card">
-                    <h3 style="color: #27ae60;"><?php echo $stats['active_pois']; ?></h3>
-                    <p style="color: #666;">Active</p>
+                    <h3 style="color: #fffaf3;"><?php echo $stats['active_pois']; ?></h3>
+                    <p style="color: #fffaf3;">Active</p>
                 </div>
                 <div class="stat-card">
-                    <h3 style="color: #f39c12;"><?php echo $stats['pending_pois']; ?></h3>
-                    <p style="color: #666;">Pending</p>
+                    <h3 style="color: #fffaf3;"><?php echo $stats['pending_pois']; ?></h3>
+                    <p style="color: #fffaf3;">Pending</p>
                 </div>
                 <div class="stat-card">
-                    <h3 style="color: #e74c3c;"><?php echo $stats['inactive_pois']; ?></h3>
-                    <p style="color: #666;">Inactive</p>
+                    <h3 style="color: #fffaf3;"><?php echo $stats['inactive_pois']; ?></h3>
+                    <p style="color: #fffaf3;">Inactive</p>
                 </div>
                 <div class="stat-card">
-                    <h3 style="color: #9b59b6;"><?php echo $stats['featured_pois']; ?></h3>
-                    <p style="color: #666;">Featured</p>
+                    <h3 style="color: #fffaf3;"><?php echo $stats['featured_pois']; ?></h3>
+                    <p style="color: #fffaf3;">Featured</p>
                 </div>
                 <div class="stat-card">
-                    <h3 style="color: #34495e;"><?php echo number_format($stats['total_views']); ?></h3>
-                    <p style="color: #666;">Total Views</p>
+                    <h3 style="color: #fffaf3;"><?php echo number_format($stats['total_views']); ?></h3>
+                    <p style="color: #fffaf3;">Total Views</p>
                 </div>
             </div>
             
