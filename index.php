@@ -73,12 +73,23 @@ $featured_pois = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </h5>
 
 
-                        <div class="ratio ratio-16x9 bg-dark" >
-                            <video width="100%" height="514" controls poster="images/thumbnail.jpg" class="rounded-0" style="border: 2px solid rgba(123, 62, 25, 1);">
+                       <div class="ratio ratio-16x9 bg-dark">
+                        <video 
+                            width="100%" 
+                            height="514" 
+                            controls 
+                            autoplay 
+                             
+                            playsinline 
+                            poster="images/thumbnail.jpg" 
+                            class="rounded-0" 
+                            style="border: 2px solid rgba(123, 62, 25, 1);">
+                            
                             <source src="images/video.mp4" type="video/mp4">
                             Your browser does not support the video tag.
-                            </video>
+                        </video>
                         </div>
+
 
                         <!-- <div class="ratio ratio-16x9">
                             <source width="1038" height="514" src="images/video.mp4" type="video/mp4" allowfullscreen>
