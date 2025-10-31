@@ -178,6 +178,16 @@ main {
   transition: all 0.3s ease;
 }
 
+.card1 {
+  background-color: #fffaf3;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: 2rem;
+
+  border: 1px solid rgba(229, 212, 177, 1);
+  transition: all 0.3s ease;
+}
+
 .card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
@@ -504,12 +514,13 @@ main {
   padding: 1rem 1.25rem;
   border-radius: var(--radius-lg);
   background: var(--background);
-  border: 1px solid var(--border-light);
+  border: 1px solid #7b3e19;
   box-shadow: var(--shadow-sm);
 }
 
 .message.user .message-content {
-  background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+  background-color: #7b3e19;
+  border: 1px solid rgba(229, 212, 177, 1);
   color: white;
   border: none;
 }
@@ -534,7 +545,7 @@ main {
 
 .chat-input input:focus {
   outline: none;
-  border-color: var(--secondary);
+  border-color: #7b3e19;
   box-shadow: 0 0 0 3px rgba(128, 90, 213, 0.1);
 }
 
@@ -716,7 +727,7 @@ main {
 }
 
 .admin-tab.active {
-  background: #007bff;
+  background: #7b3e19;
   color: white;
 }
 
@@ -726,8 +737,9 @@ main {
 }
 
 .admin-tab.active:hover {
-  background: #0056b3;
-  color: white;
+  background: #fffaf3;
+  border: 1px solid #7b3e19;
+  color: #7b3e19;
 }
 
 .user-filters {
@@ -794,28 +806,30 @@ main {
 
 .activity-filters {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: .5rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
   align-items: end;
+
 }
 
 .activity-filters>div {
   display: flex;
   flex-direction: column;
+
 }
 
 .activity-filters input,
 .activity-filters select {
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid #7b3e19;
   border-radius: 4px;
   margin-top: 0.25rem;
 }
 
 .activity-item {
   padding: 1rem;
-  border: 1px solid #eee;
+  border: 1px solid #7b3e19;
   border-radius: 8px;
   margin-bottom: 1rem;
 }
@@ -941,22 +955,31 @@ main {
 .stat-card p {
   margin: 0.5rem 0 0 0;
   opacity: 0.9;
+  color: #fffaf3;
 }
 
 .stat-card.users {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: #7b3e19;
+  border: 1px solid rgba(229, 212, 177, 1);
+  color: #fffaf3;
 }
 
 .stat-card.engagement {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background-color: #7b3e19;
+  border: 1px solid rgba(229, 212, 177, 1);
+  color: #fffaf3;
 }
 
 .stat-card.content {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background-color: #7b3e19;
+  border: 1px solid rgba(229, 212, 177, 1);
+  color: #fffaf3;
 }
 
 .stat-card.activity {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  background-color: #7b3e19;
+  border: 1px solid rgba(229, 212, 177, 1);
+  color: #fffaf3;
 }
 
 .analytics-grid {
@@ -994,13 +1017,14 @@ main {
 .analytics-table {
   width: 100%;
   border-collapse: collapse;
+  border-color: 1px solid #7b3e19;
 }
 
 .analytics-table th,
 .analytics-table td {
   padding: 0.75rem;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #7b3e19;
 }
 
 .analytics-table th {

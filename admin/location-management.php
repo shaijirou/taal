@@ -230,6 +230,7 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Location Management - <?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
      <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         /* Added styles for image upload and preview */
         .image-upload-container {
@@ -282,6 +283,8 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
             cursor: pointer;
             margin-top: 0.5rem;
         }
+
+        
     </style>
 </head>
 <body>
@@ -289,7 +292,7 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <a href="../index.php" style="color: #7b3e19; text-decoration: none;">Ala Eh! Admin 🔧</a>
+                    <a href="../index.php" style="color: #7b3e19; text-decoration: none;">Ala Eh! Admin </a>
                 </div>
                 <nav>
                     <ul >
@@ -350,7 +353,7 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
             
             <!-- Category Breakdown -->
             <div class="card mb-4">
-                <h3>Category Breakdown</h3>
+                <h4>Category Breakdown</h4>
                 <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
                     <?php foreach ($category_breakdown as $cat): ?>
                         <div style="text-align: center;">
@@ -449,7 +452,7 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
             
             <!-- Locations Grid -->
             <div class="card">
-                <h3>Locations (<?php echo count($pois); ?> found)</h3>
+                <h2>Locations (<?php echo count($pois); ?> found)</h2>
                 
                 <?php if (empty($pois)): ?>
                     <p>No locations found matching your criteria.</p>
@@ -457,15 +460,7 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="poi-grid">
                         <?php foreach ($pois as $poi): ?>
                             <div class="poi-card <?php echo $poi['status']; ?>">
-                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                                    <!-- <input type="checkbox" class="poi-checkbox" value="<?php echo $poi['id']; ?>" onchange="updateBulkActions()"> -->
-                                    <div style="display: flex; gap: 0.5rem;">
-                                        <span class="poi-status <?php echo $poi['status']; ?>"><?php echo ucfirst($poi['status']); ?></span>
-                                        <?php if ($poi['featured']): ?>
-                                            <span class="featured-badge">Featured</span>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
+                               
                                   <?php if ($poi['image_url']): ?>
                                         <img src="../<?php echo htmlspecialchars($poi['image_url']); ?>" 
                                             alt="<?php echo htmlspecialchars($poi['name']); ?>" 
@@ -485,17 +480,20 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                                         </div>
                                     <?php endif; ?>
 
+                                <br>
+                                <h4 style="padding: .5rem"><?php echo htmlspecialchars($poi['name']); ?></h4>
+                                <p class="poi-category" style="color: #fffaf3; font-size: 0.9rem;"><?php echo ucfirst($poi['category']); ?></p>
+                                <p class="poi-description" style="font-size: 0.9rem; padding: .5rem"><?php echo htmlspecialchars(substr($poi['description'], 0, 100)) . '...'; ?></p>
                                 
-                                <h4><?php echo htmlspecialchars($poi['name']); ?></h4>
-                                <p style="color: #666; font-size: 0.9rem;"><?php echo ucfirst($poi['category']); ?></p>
-                                <p style="font-size: 0.9rem;"><?php echo htmlspecialchars(substr($poi['description'], 0, 100)) . '...'; ?></p>
-                                
-                                <div style="display: flex; justify-content: space-between; margin: 1rem 0; font-size: 0.9rem; color: #666;">
-                                    <span>Rating: <?php echo $poi['rating']; ?>/5</span>
+                                <div class="poi-rating" style="display: flex; justify-content: space-between; margin: 1rem 0; font-size: 0.9rem; color: #666; padding: .5rem">
+                                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                                        <?php echo $i <= $poi['rating'] ? '⭐' : '☆'; ?>
+                                    <?php endfor; ?>
+                                    (<?php echo $poi['rating']; ?>)
                                     <span>Views: <?php echo number_format($poi['view_count']); ?></span>
                                 </div>
                                 
-                                <div style="display: flex; justify-content: space-between; margin: 1rem 0; font-size: 0.9rem; color: #666;">
+                                <div style="display: flex; justify-content: space-between; margin: 1rem 0; font-size: 0.9rem; color: #666; padding: .5rem">
                                     <span>Reviews: <?php echo $poi['review_count']; ?></span>
                                     <span>Favorites: <?php echo $poi['favorite_count']; ?></span>
                                 </div>
@@ -506,12 +504,12 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                                     </div>
                                 <?php endif; ?>
                                 
-                                <div class="poi-actions">
+                                <div class="poi-actions" style="text-align: center">
                                     <a href="?edit=<?php echo $poi['id']; ?>" class="btn btn-primary">Edit</a>
-                                    <a href="../poi-details.php?id=<?php echo $poi['id']; ?>" class="btn btn-secondary" target="_blank">View</a>
+                                    <a href="../poi-details.php?id=<?php echo $poi['id']; ?>" class="btn btn-primary" target="_blank">View</a>
                                 </div>
                                 
-                                <div style="margin-top: 1rem; font-size: 0.8rem; color: #999;">
+                                <div style="margin-top: 1rem; font-size: 0.8rem; color: #999; text-align: center">
                                     Created: <?php echo date('M j, Y', strtotime($poi['created_at'])); ?>
                                     <?php if ($poi['updated_at'] !== $poi['created_at']): ?>
                                         <br>Updated: <?php echo date('M j, Y', strtotime($poi['updated_at'])); ?>
@@ -529,7 +527,7 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php if ($edit_poi): ?>
         <div class="edit-form">
             <div class="edit-form-content">
-                <h3>Edit Location: <?php echo htmlspecialchars($edit_poi['name']); ?></h3>
+                <h2>Edit Location: <?php echo htmlspecialchars($edit_poi['name']); ?></h2>
                 <!-- Added enctype for file upload -->
                 <form method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="poi_id" value="<?php echo $edit_poi['id']; ?>">

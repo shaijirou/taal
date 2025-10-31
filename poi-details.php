@@ -123,13 +123,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isLoggedIn() && isset($_POST['submit
     <title><?php echo htmlspecialchars($poi['name']); ?> - <?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         .poi-header {
             background: linear-gradient(135deg, var(--surface) 0%, var(--background) 100%);
             border-radius: var(--radius-xl);
             padding: 2rem;
             margin-bottom: 2rem;
-            border: 1px solid var(--border-light);
+           border: 1px solid #7b3e19
         }
         
         .poi-image-gallery {
@@ -153,11 +154,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isLoggedIn() && isset($_POST['submit
         }
         
         .info-card {
-            background: var(--surface-elevated);
+            background:  #fffaf3;
             border-radius: var(--radius-lg);
             padding: 1.5rem;
             border: 1px solid var(--border-light);
             box-shadow: var(--shadow-sm);
+            color: #7b3e19;
         }
         
         .info-item {
@@ -178,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isLoggedIn() && isset($_POST['submit
         .info-icon {
             width: 24px;
             height: 24px;
-            background: var(--secondary);
+            background-color: #7b3e19; border: 1px solid rgba(229, 212, 177, 1);
             color: white;
             border-radius: 50%;
             display: flex;
@@ -343,7 +345,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isLoggedIn() && isset($_POST['submit
             <div class="poi-info-grid">
                 <div>
                     <div class="info-card">
-                        <h3 style="margin-bottom: 1.5rem;">About This Place</h3>
+                        <h2 style="margin-bottom: 1.5rem;">About This Place</h2>
                         <p style="line-height: 1.7; color: var(--text-secondary);">
                             <?php echo nl2br(htmlspecialchars($poi['description'])); ?>
                         </p>
@@ -352,7 +354,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isLoggedIn() && isset($_POST['submit
                 
                 <div>
                     <div class="info-card">
-                        <h3 style="margin-bottom: 1.5rem;">Details</h3>
+                        <h2 style="margin-bottom: 1.5rem;">Details</h2>
                         
                         <div class="info-item">
                             <div class="info-icon">📍</div>
@@ -405,8 +407,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isLoggedIn() && isset($_POST['submit
             
              <!-- Enhanced map section  -->
             <div class="card">
-                <h3 style="margin-bottom: 1.5rem;">Location & Directions</h3>
-                <div id="poi-map" style="height: 400px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); margin-top: 1rem; margin-bottom: 1rem; position: relative; z-index: 0;"></div>
+              <h2>Location & Directions</h2>
+                <div id="poi-map" style="height: 400px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);   position: relative; z-index: 0;"></div>
                 <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
                     <button class="btn btn-success" onclick="getDirections()">📱 Get Directions</button>
                 </div>
@@ -447,7 +449,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isLoggedIn() && isset($_POST['submit
 
              <!-- Enhanced reviews section with statistics  -->
             <div class="card">
-                <h3 style="margin-bottom: 1.5rem;">Reviews & Ratings</h3>
+                <h2 style="margin-bottom: 1.5rem;">Reviews & Ratings</h2>
                 
                 <?php if ($review_stats['total_reviews'] > 0): ?>
                     <div class="review-stats">

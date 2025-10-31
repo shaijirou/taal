@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profile'])) {
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                 <!-- Profile Information -->
                 <div class="card">
-                    <h3>Profile Information</h3>
+                    <h2>Profile Information</h2>
                     
                     <?php if ($error): ?>
                         <div class="alert alert-error"><?php echo $error; ?></div>
@@ -123,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profile'])) {
               
                 <!-- Account Statistics -->
                 <div class="card">
-                    <h3>Account Statistics</h3>
+                    <h2>Account Statistics</h2>
                     <div style="display: flex; flex-direction: column; gap: 1rem;">
                         <div style="padding: 1rem; background: #f8f9fa; border-radius: 5px;">
                             <h4 style="margin: 0; color: #3498db;">❤️ <?php echo count($favorites); ?></h4>
@@ -154,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profile'])) {
             
             <!-- Favorite Places -->
             <div class="mt-4">
-                <h3>My Favorite Places (<?php echo count($favorites); ?>)</h3>
+                <h2>My Favorite Places (<?php echo count($favorites); ?>)</h2>
                 <?php if (empty($favorites)): ?>
                     <div class="card">
                         <p>You haven't added any favorites yet. <a href="places.php">Explore places</a> and add some to your favorites!</p>
@@ -214,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profile'])) {
             
             <!-- My Reviews -->
             <div class="card mt-4">
-                <h3>My Reviews (<?php echo count($user_reviews); ?>)</h3>
+                <h2>My Reviews (<?php echo count($user_reviews); ?>)</h2>
                 <?php if (empty($user_reviews)): ?>
                     <p>You haven't written any reviews yet. <a href="places.php">Visit some places</a> and share your experiences!</p>
                 <?php else: ?>

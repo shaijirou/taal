@@ -165,7 +165,8 @@ $geographic_chart_data = json_encode($geographic_data);
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <a href="../index.php" style="color: #7b3e19; text-decoration: none;">Ala Eh! Admin 🔧</a>
+                    <a href="../index.php" style="color: #7b3e19; text-decoration: none;">Ala Eh! Admin</a>
+                    
                 </div>
                 <nav>
                     <ul >

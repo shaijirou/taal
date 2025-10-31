@@ -95,6 +95,7 @@ $activity_summary = $summary_stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>User Activity History - <?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
      <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet">
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
        
     </style>
@@ -104,7 +105,7 @@ $activity_summary = $summary_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <a href="../index.php" style="color: #7b3e19; text-decoration: none;">Ala Eh! Admin 🔧</a>
+                    <a href="../index.php" style="color: #7b3e19; text-decoration: none;">Ala Eh! Admin </a>
                 </div>
                 <nav>
                     <ul >
@@ -136,7 +137,7 @@ $activity_summary = $summary_stmt->fetchAll(PDO::FETCH_ASSOC);
             
             <!-- Activity Summary -->
             <div class="card mb-4">
-                <h3>Activity Summary (Last <?php echo $days; ?> days)</h3>
+                <h2>Activity Summary (Last <?php echo $days; ?> days)</h2>
                 <div class="summary-grid">
                     <?php foreach ($activity_summary as $summary): ?>
                         <div class="summary-card">
@@ -150,7 +151,7 @@ $activity_summary = $summary_stmt->fetchAll(PDO::FETCH_ASSOC);
             
             <!-- Filters -->
             <div class="card mb-4">
-                <h3>Filter Activities</h3>
+                <h2>Filter Activities</h2>
                 <form method="GET" class="activity-filters">
                     <div>
                         <label>User:</label>
@@ -198,7 +199,7 @@ $activity_summary = $summary_stmt->fetchAll(PDO::FETCH_ASSOC);
             
             <!-- Activities List -->
             <div class="card">
-                <h3>Activities (<?php echo number_format($total_activities); ?> total)</h3>
+                <h2>Activities (<?php echo number_format($total_activities); ?> total)</h2>
                 
                 <?php if (empty($activities)): ?>
                     <p>No activities found for the selected criteria.</p>

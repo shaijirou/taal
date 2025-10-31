@@ -252,7 +252,7 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
         <div class="container">
             <div class="header-content">
                 <div class="logo">
-                    <a href="../index.php" style="color: #7b3e19; text-decoration: none;">Ala Eh! Admin 🔧</a>
+                    <a href="../index.php" style="color: #7b3e19; text-decoration: none;">Ala Eh! Admin </a>
                 </div>
                 <nav>
                     <ul >
@@ -318,7 +318,7 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                     <div class="card">
-                        <h3>Recent Users</h3>
+                        <h4>Recent Users</h4>
                         <?php
                         $recent_users_query = "SELECT username, full_name, role, created_at FROM users ORDER BY created_at DESC LIMIT 5";
                         $recent_users_stmt = $db->prepare($recent_users_query);
@@ -335,7 +335,7 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                     </div>
                     
                     <div class="card">
-                        <h3>System Overview</h3>
+                        <h4>System Overview</h4>
                         <div style="padding: 1rem 0;">
                             <div style="margin-bottom: 1rem;">
                                 <strong>Reviews:</strong> <?php echo $stats['total_reviews']; ?>
@@ -353,7 +353,7 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
             <?php elseif ($current_tab === 'users'): ?>
                 <!-- User Management Section -->
                 <div class="card mb-4">
-                    <h3><?php echo $edit_user ? 'Edit User' : 'Add New User'; ?></h3>
+                    <h2><?php echo $edit_user ? 'Edit User' : 'Add New User'; ?></h2>
                     <form method="POST">
                         <?php if ($edit_user): ?>
                             <input type="hidden" name="user_id" value="<?php echo $edit_user['id']; ?>">
@@ -499,7 +499,7 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                 <!-- POI Management Section (existing functionality) -->
                 <!-- Add New POI -->
                 <div class="card mb-4">
-                    <h3>Add New Point of Interest</h3>
+                    <h2>Add New Point of Interest</h2>
                     <!-- Added enctype for file uploads -->
                     <form method="POST" enctype="multipart/form-data">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -610,10 +610,10 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                                             <?php echo date('M j, Y', strtotime($poi['created_at'])); ?>
                                         </td>
                                         <td style="padding: 1rem; border-bottom: 1px solid #eee;">
-                                            <a href="../poi-details.php?id=<?php echo $poi['id']; ?>" class="btn btn-primary" style="margin-right: 0.5rem;">View</a>
+                                            <a href="../poi-details.php?id=<?php echo $poi['id']; ?>" class="btn btn-primary" style="width:90px; height: 30px; margin-right: 0.5rem;">View</a>
                                             <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this POI?');">
                                                 <input type="hidden" name="poi_id" value="<?php echo $poi['id']; ?>">
-                                                <button type="submit" name="delete_poi" class="btn btn-danger">Delete</button>
+                                                <button type="submit" name="delete_poi" class="btn btn-danger" style="margin-top: 2px;  width:90px; height: 30px; ">Delete</button>
                                             </form>
                                         </td>
                                     </tr>
