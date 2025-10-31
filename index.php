@@ -142,15 +142,15 @@ $featured_pois = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <p>Real-time GPS navigation with accurate directions to all tourist destinations in Taal.</p>
                     </div> -->
                     <div class="card">
-                        <h3>🤖 ChatBot Tour Guide</h3>
+                        <h2>🤖 ChatBot Tour Guide</h2>
                         <p>Chat with our intelligent assistant for personalized recommendations and local insights.</p>
                     </div>
                     <div class="card">
-                        <h3>📍 Points of Interest</h3>
+                        <h2>📍 Points of Interest</h2>
                         <p>Discover attractions, restaurants, accommodations, and cultural sites with detailed information.</p>
                     </div>
                     <div class="card">
-                        <h3>⭐ Reviews & Ratings</h3>
+                        <h2>⭐ Reviews & Ratings</h2>
                         <p>Read authentic reviews from fellow travelers and share your own experiences.</p>
                     </div>
                 </div>
