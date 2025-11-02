@@ -19,7 +19,27 @@ $featured_pois = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title><?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet">
+<style>
+.video-container {
+    width: 1038px;
+    height: 514px;
+    margin: 0 auto; /* center the video */
+}
 
+.video-container iframe {
+    width: 100%;
+    height: 100%;
+}
+
+/* Make video responsive on smaller screens */
+@media (max-width: 1038px) {
+    .video-container {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1038 / 514; /* maintain aspect ratio */
+    }
+}
+</style>
 </head>
 <body>
     <?php include 'includes/header.php'; ?>
@@ -73,7 +93,7 @@ $featured_pois = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </h5>
 
 
-                       <div class="ratio ratio-16x9 bg-dark">
+                       <!-- <div class="ratio ratio-16x9 bg-dark">
                         <video 
                             width="100%" 
                             height="514" 
@@ -88,14 +108,19 @@ $featured_pois = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <source src="images/video.mp4" type="video/mp4">
                             Your browser does not support the video tag.
                         </video>
-                        </div>
-
-
-                        <!-- <div class="ratio ratio-16x9">
-                            <source width="1038" height="514" src="images/video.mp4" type="video/mp4" allowfullscreen>
-                        <iframe width="1038" height="514" src="images/video.mp4" title="TAAL HERITAGE TOWN (TOURISM VIDEO)" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                        
                         </div> -->
+
+                       <div class="video-container">
+    <iframe 
+        src="https://www.youtube.com/embed/KDm05Xl7GXo" 
+        title="TAAL HERITAGE TOWN (TOURISM VIDEO)" 
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+        referrerpolicy="strict-origin-when-cross-origin" 
+        allowfullscreen>
+    </iframe>
+</div>
+
 
                         <div class="card-body text-center bg-white">
                             <p class="text-muted mb-0">
