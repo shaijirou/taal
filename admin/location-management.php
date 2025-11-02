@@ -12,6 +12,51 @@ $db = $database->getConnection();
 
 // Handle POI operations
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (isset($_POST['add_poi'])) {
+        $name = sanitizeInput($_POST['name']);
+        $description = sanitizeInput($_POST['description']);
+        $category = sanitizeInput($_POST['category']);
+        $latitude = (float)$_POST['latitude'];
+        $longitude = (float)$_POST['longitude'];
+        $address = sanitizeInput($_POST['address']);
+        $contact_info = sanitizeInput($_POST['contact_info']);
+        $opening_hours = sanitizeInput($_POST['opening_hours']);
+        $price_range = sanitizeInput($_POST['price_range']);
+        
+        $image_url = '';
+        if (isset($_FILES['poi_image']) && $_FILES['poi_image']['error'] === UPLOAD_ERR_OK) {
+            $upload_dir = '../uploads/poi_images/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+            
+            $file_extension = strtolower(pathinfo($_FILES['poi_image']['name'], PATHINFO_EXTENSION));
+            $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            
+            if (in_array($file_extension, $allowed_extensions)) {
+                $new_filename = 'poi_' . time() . '.' . $file_extension;
+                $upload_path = $upload_dir . $new_filename;
+                
+                if (move_uploaded_file($_FILES['poi_image']['tmp_name'], $upload_path)) {
+                    $image_url = 'uploads/poi_images/' . $new_filename;
+                }
+            }
+        }
+        
+        $query = "INSERT INTO points_of_interest (name, description, category, latitude, longitude, address, contact_info, opening_hours, price_range, image_url, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $db->prepare($query);
+        $stmt->execute([$name, $description, $category, $latitude, $longitude, $address, $contact_info, $opening_hours, $price_range, $image_url, $_SESSION['user_id']]);
+        
+        // Log admin action
+        $admin_id = $_SESSION['user_id'];
+        $log_query = "INSERT INTO admin_logs (admin_id, action, target_type, target_id, new_data, description, ip_address) VALUES (?, 'create_poi', 'poi', ?, ?, 'Created new POI', ?)";
+        $log_stmt = $db->prepare($log_query);
+        $log_stmt->execute([$admin_id, $db->lastInsertId(), json_encode(['name' => $name, 'category' => $category]), $_SERVER['REMOTE_ADDR']]);
+        
+        header('Location: location-management.php?success=poi_added');
+        exit();
+    }
+
     if (isset($_POST['update_poi'])) {
         $poi_id = (int)$_POST['poi_id'];
         $name = sanitizeInput($_POST['name']);
@@ -81,62 +126,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header('Location: location-management.php?success=poi_updated');
         exit();
     }
-    
-    // if (isset($_POST['bulk_action']) && isset($_POST['selected_pois'])) {
-    //     $action = $_POST['bulk_action'];
-    //     $selected_pois = $_POST['selected_pois'];
+
+    if (isset($_POST['delete_poi'])) {
+        $poi_id = (int)$_POST['poi_id'];
         
-    //     foreach ($selected_pois as $poi_id) {
-    //         $poi_id = (int)$poi_id;
+        // Get POI data before deleting for logging
+        $get_query = "SELECT * FROM points_of_interest WHERE id = ?";
+        $get_stmt = $db->prepare($get_query);
+        $get_stmt->execute([$poi_id]);
+        $poi_data = $get_stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($poi_data) {
+            // Delete associated image if exists
+            if ($poi_data['image_url'] && !filter_var($poi_data['image_url'], FILTER_VALIDATE_URL) && file_exists('../' . $poi_data['image_url'])) {
+                unlink('../' . $poi_data['image_url']);
+            }
             
-    //         switch ($action) {
-    //             case 'activate':
-    //                 $query = "UPDATE points_of_interest SET status = 'active' WHERE id = ?";
-    //                 $stmt = $db->prepare($query);
-    //                 $stmt->execute([$poi_id]);
-    //                 break;
-                    
-    //             case 'deactivate':
-    //                 $query = "UPDATE points_of_interest SET status = 'inactive' WHERE id = ?";
-    //                 $stmt = $db->prepare($query);
-    //                 $stmt->execute([$poi_id]);
-    //                 break;
-                    
-    //             case 'feature':
-    //                 $query = "UPDATE points_of_interest SET featured = 1 WHERE id = ?";
-    //                 $stmt = $db->prepare($query);
-    //                 $stmt->execute([$poi_id]);
-    //                 break;
-                    
-    //             case 'unfeature':
-    //                 $query = "UPDATE points_of_interest SET featured = 0 WHERE id = ?";
-    //                 $stmt = $db->prepare($query);
-    //                 $stmt->execute([$poi_id]);
-    //                 break;
-                    
-    //             case 'delete':
-    //                 // Get POI data for logging
-    //                 $poi_query = "SELECT * FROM points_of_interest WHERE id = ?";
-    //                 $poi_stmt = $db->prepare($poi_query);
-    //                 $poi_stmt->execute([$poi_id]);
-    //                 $poi_data = $poi_stmt->fetch(PDO::FETCH_ASSOC);
-                    
-    //                 $query = "DELETE FROM points_of_interest WHERE id = ?";
-    //                 $stmt = $db->prepare($query);
-    //                 $stmt->execute([$poi_id]);
-                    
-    //                 // Log admin action
-    //                 $admin_id = $_SESSION['user_id'];
-    //                 $log_query = "INSERT INTO admin_logs (admin_id, action, target_type, target_id, old_data, description, ip_address) VALUES (?, 'delete_poi', 'poi', ?, ?, 'Bulk deleted POI', ?)";
-    //                 $log_stmt = $db->prepare($log_query);
-    //                 $log_stmt->execute([$admin_id, $poi_id, json_encode($poi_data), $_SERVER['REMOTE_ADDR']]);
-    //                 break;
-    //         }
-    //     }
+            // Delete from database
+            $delete_query = "DELETE FROM points_of_interest WHERE id = ?";
+            $delete_stmt = $db->prepare($delete_query);
+            $delete_stmt->execute([$poi_id]);
+            
+            // Log admin action
+            $admin_id = $_SESSION['user_id'];
+            $log_query = "INSERT INTO admin_logs (admin_id, action, target_type, target_id, old_data, description, ip_address) VALUES (?, 'delete_poi', 'poi', ?, ?, 'Deleted POI', ?)";
+            $log_stmt = $db->prepare($log_query);
+            $log_stmt->execute([$admin_id, $poi_id, json_encode($poi_data), $_SERVER['REMOTE_ADDR']]);
+        }
         
-    //     header('Location: location-management.php?success=bulk_action_completed');
-    //     exit();
-    // }
+        header('Location: location-management.php?success=poi_deleted');
+        exit();
+    }
 }
 
 // Get filters
@@ -214,12 +234,6 @@ $stats_query = "SELECT
 $stats_stmt = $db->prepare($stats_query);
 $stats_stmt->execute();
 $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
-
-// Get category breakdown
-$category_query = "SELECT category, COUNT(*) as count FROM points_of_interest GROUP BY category ORDER BY count DESC";
-$category_stmt = $db->prepare($category_query);
-$category_stmt->execute();
-$category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -230,15 +244,131 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Location Management - <?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="../assets/css/style.css">
      <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet">
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> -->
     <style>
-        /* Added styles for image upload and preview */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 0.75rem;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #7b3e19;
+            box-shadow: 0 0 0 3px rgba(123, 62, 25, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
         .image-upload-container {
             display: flex;
             flex-direction: column;
             gap: 1rem;
         }
-        
+
         .image-preview {
             max-width: 200px;
             max-height: 150px;
@@ -246,34 +376,37 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 8px;
             border: 2px solid #ddd;
         }
-        
+
         .image-upload-area {
             border: 2px dashed #ddd;
             border-radius: 8px;
             padding: 2rem;
             text-align: center;
             cursor: pointer;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
+            background: #fafafa;
         }
-        
+
         .image-upload-area:hover {
-            border-color: #3498db;
+            border-color: #7b3e19;
+            background: #fff8f5;
         }
-        
+
         .image-upload-area.dragover {
-            border-color: #3498db;
-            background-color: #f8f9fa;
+            border-color: #7b3e19;
+            background: #f5ede5;
         }
-        
+
         .upload-text {
             color: #666;
             margin-top: 0.5rem;
+            font-size: 0.9rem;
         }
-        
+
         .current-image {
             margin-bottom: 1rem;
         }
-        
+
         .remove-image-btn {
             background: #e74c3c;
             color: white;
@@ -282,9 +415,96 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
             border-radius: 4px;
             cursor: pointer;
             margin-top: 0.5rem;
+            font-weight: 600;
+            transition: background 0.2s;
         }
 
-        
+        .remove-image-btn:hover {
+            background: #c0392b;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-success {
+            background: #7b3e19;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #5a2e12;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+            flex: 1;
+            min-width: 80px;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .poi-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .poi-actions .btn {
+            flex: 1;
+             min-width: 80px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-primary {
+            background: #7b3e19;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a2e12;
+        }
+
+        .image-upload-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .image-upload-area div:first-child {
+            font-size: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -316,7 +536,9 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="success-message">
                     <?php
                     switch($_GET['success']) {
+                        case 'poi_added': echo 'Location successfully added!'; break;
                         case 'poi_updated': echo 'Location successfully updated!'; break;
+                        case 'poi_deleted': echo 'Location successfully deleted!'; break;
                         case 'bulk_action_completed': echo 'Bulk action completed successfully!'; break;
                     }
                     ?>
@@ -355,18 +577,32 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="card mb-4">
                 <h4>Category Breakdown</h4>
                 <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                    <?php 
+                    $category_query = "SELECT category, COUNT(*) as count FROM points_of_interest GROUP BY category ORDER BY count DESC";
+                    $category_stmt = $db->prepare($category_query);
+                    $category_stmt->execute();
+                    $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
+                    ?>
                     <?php foreach ($category_breakdown as $cat): ?>
                         <div style="text-align: center;">
                             <h4><?php echo $cat['count']; ?></h4>
                             <p><?php echo ucfirst($cat['category']); ?></p>
                         </div>
                     <?php endforeach; ?>
+                   
                 </div>
+              
+            </div>
+            
+            <!-- added button to open add place modal -->
+            <div class="card mb-4" style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>Manage Locations</h2>
+                <button type="button" class="btn btn-success" onclick="openAddPlaceModal()">+ Add New Place</button>
             </div>
             
             <!-- Filters -->
             <div class="card mb-4">
-                <h3>Filter & Search Locations</h3>
+                <h3 style="color: #7b3e19">Filter & Search Locations</h3>
                 <form method="GET" class="location-filters">
                     <div>
                         <label>Search:</label>
@@ -430,26 +666,6 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                 </form>
             </div>
             
-            <!-- Bulk Actions -->
-            <div class="bulk-actions" id="bulkActions">
-                <form method="POST" onsubmit="return confirm('Are you sure you want to perform this bulk action?');">
-                    <div style="display: flex; gap: 1rem; align-items: center;">
-                        <span><strong>Bulk Actions:</strong></span>
-                        <select name="bulk_action" required>
-                            <option value="">Select Action</option>
-                            <option value="activate">Activate</option>
-                            <option value="deactivate">Deactivate</option>
-                            <option value="feature">Feature</option>
-                            <option value="unfeature">Unfeature</option>
-                            <option value="delete">Delete</option>
-                        </select>
-                        <button type="submit" class="btn btn-warning">Apply to Selected</button>
-                        <button type="button" class="btn btn-secondary" onclick="clearSelection()">Clear Selection</button>
-                    </div>
-                    <div id="selectedPois"></div>
-                </form>
-            </div>
-            
             <!-- Locations Grid -->
             <div class="card">
                 <h2>Locations (<?php echo count($pois); ?> found)</h2>
@@ -504,9 +720,14 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
                                     </div>
                                 <?php endif; ?>
                                 
-                                <div class="poi-actions" style="text-align: center">
+                                <!-- Updated POI card actions with delete button and improved layout -->
+                                <div class="poi-actions">
                                     <a href="?edit=<?php echo $poi['id']; ?>" class="btn btn-primary">Edit</a>
                                     <a href="../poi-details.php?id=<?php echo $poi['id']; ?>" class="btn btn-primary" target="_blank">View</a>
+                                    <form method="POST" style="flex: 1;">
+                                        <input type="hidden" name="poi_id" value="<?php echo $poi['id']; ?>">
+                                        <button type="submit" name="delete_poi" class="btn btn-danger" style="width: 80px; height: 50px; margin: 0;" onclick="return confirm('Are you sure you want to delete this location? This action cannot be undone.');">Delete</button>
+                                    </form>
                                 </div>
                                 
                                 <div style="margin-top: 1rem; font-size: 0.8rem; color: #999; text-align: center">
@@ -523,116 +744,222 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </main>
     
-    <!-- Edit Form Modal -->
-    <?php if ($edit_poi): ?>
-        <div class="edit-form">
-            <div class="edit-form-content">
-                <h2>Edit Location: <?php echo htmlspecialchars($edit_poi['name']); ?></h2>
-                <!-- Added enctype for file upload -->
-                <form method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="poi_id" value="<?php echo $edit_poi['id']; ?>">
-                    <input type="hidden" name="image_url" value="<?php echo htmlspecialchars($edit_poi['image_url']); ?>">
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <!-- Improved modal with modern styling and better UX -->
+    <div id="addPlaceModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Location</h2>
+                <button type="button" class="close-btn" onclick="closeAddPlaceModal()">&times;</button>
+            </div>
+            
+            <form method="POST" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="form-row">
                         <div class="form-group">
-                            <label for="name">Name *</label>
-                            <input type="text" id="name" name="name" class="form-control" value="<?php echo htmlspecialchars($edit_poi['name']); ?>" required>
+                            <label for="add_name">Location Name *</label>
+                            <input type="text" id="add_name" name="name" placeholder="Enter location name" required>
                         </div>
                         <div class="form-group">
-                            <label for="category">Category *</label>
-                            <select id="category" name="category" class="form-control" required>
-                                <option value="attraction" <?php echo $edit_poi['category'] === 'attraction' ? 'selected' : ''; ?>>Attraction</option>
-                                <option value="restaurant" <?php echo $edit_poi['category'] === 'restaurant' ? 'selected' : ''; ?>>Restaurant</option>
-                                <option value="accommodation" <?php echo $edit_poi['category'] === 'accommodation' ? 'selected' : ''; ?>>Accommodation</option>
-                                <option value="cultural" <?php echo $edit_poi['category'] === 'cultural' ? 'selected' : ''; ?>>Cultural</option>
-                                <option value="historical" <?php echo $edit_poi['category'] === 'historical' ? 'selected' : ''; ?>>Historical</option>
+                            <label for="add_category">Category *</label>
+                            <select id="add_category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="attraction">Attraction</option>
+                                <option value="restaurant">Restaurant</option>
+                                <option value="accommodation">Accommodation</option>
+                                <option value="cultural">Cultural</option>
+                                <option value="historical">Historical</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div class="form-row">
                         <div class="form-group">
-                            <label for="latitude">Latitude *</label>
-                            <input type="number" id="latitude" name="latitude" class="form-control" step="0.000001" value="<?php echo $edit_poi['latitude']; ?>" required>
+                            <label for="add_latitude">Latitude *</label>
+                            <input type="number" id="add_latitude" name="latitude" placeholder="e.g. 40.7128" step="0.000001" required>
                         </div>
                         <div class="form-group">
-                            <label for="longitude">Longitude *</label>
-                            <input type="number" id="longitude" name="longitude" class="form-control" step="0.000001" value="<?php echo $edit_poi['longitude']; ?>" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="status">Status *</label>
-                            <select id="status" name="status" class="form-control" required>
-                                <option value="active" <?php echo $edit_poi['status'] === 'active' ? 'selected' : ''; ?>>Active</option>
-                                <option value="inactive" <?php echo $edit_poi['status'] === 'inactive' ? 'selected' : ''; ?>>Inactive</option>
-                                <option value="pending" <?php echo $edit_poi['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" name="featured" <?php echo $edit_poi['featured'] ? 'checked' : ''; ?>>
-                                Featured Location
-                            </label>
+                            <label for="add_longitude">Longitude *</label>
+                            <input type="number" id="add_longitude" name="longitude" placeholder="e.g. -74.0060" step="0.000001" required>
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="description">Description *</label>
-                        <textarea id="description" name="description" class="form-control" rows="3" required><?php echo htmlspecialchars($edit_poi['description']); ?></textarea>
+                    <div class="form-group form-row full">
+                        <label for="add_description">Description *</label>
+                        <textarea id="add_description" name="description" placeholder="Enter detailed description" required></textarea>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="address">Address</label>
-                        <input type="text" id="address" name="address" class="form-control" value="<?php echo htmlspecialchars($edit_poi['address']); ?>">
+                    <div class="form-group form-row full">
+                        <label for="add_address">Address</label>
+                        <input type="text" id="add_address" name="address" placeholder="Enter full address">
                     </div>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="form-row">
                         <div class="form-group">
-                            <label for="contact_info">Contact Info</label>
-                            <input type="text" id="contact_info" name="contact_info" class="form-control" value="<?php echo htmlspecialchars($edit_poi['contact_info']); ?>">
+                            <label for="add_contact">Contact Info</label>
+                            <input type="text" id="add_contact" name="contact_info" placeholder="Phone or email">
                         </div>
                         <div class="form-group">
-                            <label for="opening_hours">Opening Hours</label>
-                            <input type="text" id="opening_hours" name="opening_hours" class="form-control" value="<?php echo htmlspecialchars($edit_poi['opening_hours']); ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="price_range">Price Range</label>
-                            <input type="text" id="price_range" name="price_range" class="form-control" value="<?php echo htmlspecialchars($edit_poi['price_range']); ?>">
+                            <label for="add_hours">Opening Hours</label>
+                            <input type="text" id="add_hours" name="opening_hours" placeholder="e.g. 9AM-6PM">
                         </div>
                     </div>
+
+                    <div class="form-group form-row full">
+                        <label for="add_price">Price Range</label>
+                        <input type="text" id="add_price" name="price_range" placeholder="e.g. $$ or 50-100">
+                    </div>
                     
-                    <!-- Replaced image URL input with file upload -->
-                    <div class="form-group">
-                        <label for="image_upload">Location Image</label>
+                    <div class="form-group form-row full">
+                        <label>Location Image</label>
                         <div class="image-upload-container">
-                            <?php if ($edit_poi['image_url']): ?>
-                                <div class="current-image">
-                                    <p><strong>Current Image:</strong></p>
-                                    <img src="<?php echo htmlspecialchars($edit_poi['image_url']); ?>" alt="Current image" class="image-preview" id="currentImage">
-                                    <button type="button" class="remove-image-btn" onclick="removeCurrentImage()">Remove Current Image</button>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <div class="image-upload-area" onclick="document.getElementById('image_upload').click()">
+                            <div class="image-upload-area" onclick="document.getElementById('add_image').click()">
                                 <div>📷</div>
-                                <div><strong>Click to upload new image</strong></div>
+                                <div><strong>Click to upload image</strong></div>
                                 <div class="upload-text">or drag and drop</div>
                                 <div class="upload-text">JPG, PNG, GIF, WEBP (max 5MB)</div>
                             </div>
                             
-                            <input type="file" id="image_upload" name="image_upload" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                            <input type="file" id="add_image" name="poi_image" accept="image/*" style="display: none;" onchange="previewImage(this, 'add-preview')">
                             
-                            <div id="imagePreview" style="display: none;">
-                                <p><strong>New Image Preview:</strong></p>
-                                <img id="previewImg" class="image-preview" alt="Preview">
+                            <div id="add-preview" class="image-preview" style="display: none;">
+                                <p><strong>Image Preview:</strong></p>
+                                <img id="add-preview-img" class="image-preview" alt="Preview">
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddPlaceModal()">Cancel</button>
+                    <button type="submit" name="add_poi" class="btn btn-success">Add Location</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Form Modal -->
+    <?php if ($edit_poi): ?>
+        <div class="modal-overlay active">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Location: <?php echo htmlspecialchars($edit_poi['name']); ?></h2>
+                    <a href="location-management.php" class="close-btn">&times;</a>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="poi_id" value="<?php echo $edit_poi['id']; ?>">
+                    <input type="hidden" name="image_url" value="<?php echo htmlspecialchars($edit_poi['image_url']); ?>">
                     
-                    <div class="form-group">
-                        <label for="admin_notes">Admin Notes</label>
-                        <textarea id="admin_notes" name="admin_notes" class="form-control" rows="2" placeholder="Internal notes for admin use..."><?php echo htmlspecialchars($edit_poi['admin_notes']); ?></textarea>
+                    <div class="modal-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name">Location Name *</label>
+                                <input type="text" id="name" name="name" value="<?php echo htmlspecialchars($edit_poi['name']); ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="category">Category *</label>
+                                <select id="category" name="category" required>
+                                    <option value="attraction" <?php echo $edit_poi['category'] === 'attraction' ? 'selected' : ''; ?>>Attraction</option>
+                                    <option value="restaurant" <?php echo $edit_poi['category'] === 'restaurant' ? 'selected' : ''; ?>>Restaurant</option>
+                                    <option value="accommodation" <?php echo $edit_poi['category'] === 'accommodation' ? 'selected' : ''; ?>>Accommodation</option>
+                                    <option value="cultural" <?php echo $edit_poi['category'] === 'cultural' ? 'selected' : ''; ?>>Cultural</option>
+                                    <option value="historical" <?php echo $edit_poi['category'] === 'historical' ? 'selected' : ''; ?>>Historical</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="latitude">Latitude *</label>
+                                <input type="number" id="latitude" name="latitude" step="0.000001" value="<?php echo $edit_poi['latitude']; ?>" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="longitude">Longitude *</label>
+                                <input type="number" id="longitude" name="longitude" step="0.000001" value="<?php echo $edit_poi['longitude']; ?>" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="status">Status *</label>
+                                <select id="status" name="status" required>
+                                    <option value="active" <?php echo $edit_poi['status'] === 'active' ? 'selected' : ''; ?>>Active</option>
+                                    <option value="inactive" <?php echo $edit_poi['status'] === 'inactive' ? 'selected' : ''; ?>>Inactive</option>
+                                    <option value="pending" <?php echo $edit_poi['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" name="featured" <?php echo $edit_poi['featured'] ? 'checked' : ''; ?>>
+                                    Featured Location
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group form-row full">
+                            <label for="description">Description *</label>
+                            <textarea id="description" name="description" required><?php echo htmlspecialchars($edit_poi['description']); ?></textarea>
+                        </div>
+                        
+                        <div class="form-group form-row full">
+                            <label for="address">Address</label>
+                            <input type="text" id="address" name="address" value="<?php echo htmlspecialchars($edit_poi['address']); ?>">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contact_info">Contact Info</label>
+                                <input type="text" id="contact_info" name="contact_info" value="<?php echo htmlspecialchars($edit_poi['contact_info']); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="opening_hours">Opening Hours</label>
+                                <input type="text" id="opening_hours" name="opening_hours" value="<?php echo htmlspecialchars($edit_poi['opening_hours']); ?>">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="price_range">Price Range</label>
+                                <input type="text" id="price_range" name="price_range" value="<?php echo htmlspecialchars($edit_poi['price_range']); ?>">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group form-row full">
+                            <label>Location Image</label>
+                            <div class="image-upload-container">
+                                <?php if ($edit_poi['image_url']): ?>
+                                    <div class="current-image">
+                                        <p><strong>Current Image:</strong></p>
+                                        <img src="<?php echo htmlspecialchars($edit_poi['image_url']); ?>" alt="Current image" class="image-preview" id="currentImage">
+                                        <button type="button" class="remove-image-btn" onclick="removeCurrentImage()">Remove Current Image</button>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <div class="image-upload-area" onclick="document.getElementById('image_upload').click()">
+                                    <div>📷</div>
+                                    <div><strong>Click to upload new image</strong></div>
+                                    <div class="upload-text">or drag and drop</div>
+                                    <div class="upload-text">JPG, PNG, GIF, WEBP (max 5MB)</div>
+                                </div>
+                                
+                                <input type="file" id="image_upload" name="image_upload" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                                
+                                <div id="imagePreview" style="display: none;">
+                                    <p><strong>New Image Preview:</strong></p>
+                                    <img id="previewImg" class="image-preview" alt="Preview">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group form-row full">
+                            <label for="admin_notes">Admin Notes</label>
+                            <textarea id="admin_notes" name="admin_notes" placeholder="Internal notes for admin use..."><?php echo htmlspecialchars($edit_poi['admin_notes']); ?></textarea>
+                        </div>
                     </div>
-                    
-                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                        <button type="submit" name="update_poi" class="btn btn-success">Update Location</button>
+
+                    <div class="modal-footer">
                         <a href="location-management.php" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" name="update_poi" class="btn btn-success">Update Location</button>
                     </div>
                 </form>
             </div>
@@ -642,49 +969,29 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php include '../includes/footer.php'; ?>
     
     <script>
-        function updateBulkActions() {
-            const checkboxes = document.querySelectorAll('.poi-checkbox:checked');
-            const bulkActions = document.getElementById('bulkActions');
-            const selectedPois = document.getElementById('selectedPois');
-            
-            if (checkboxes.length > 0) {
-                bulkActions.classList.add('show');
-                
-                // Add hidden inputs for selected POIs
-                selectedPois.innerHTML = '';
-                checkboxes.forEach(checkbox => {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'selected_pois[]';
-                    input.value = checkbox.value;
-                    selectedPois.appendChild(input);
-                });
-            } else {
-                bulkActions.classList.remove('show');
-            }
+        function openAddPlaceModal() {
+            document.getElementById('addPlaceModal').classList.add('active');
         }
         
-        function clearSelection() {
-            document.querySelectorAll('.poi-checkbox').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-            updateBulkActions();
+        function closeAddPlaceModal() {
+            document.getElementById('addPlaceModal').classList.remove('active');
         }
         
         // Close modal when clicking outside
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('edit-form')) {
-                window.location.href = 'location-management.php';
+        window.onclick = function(event) {
+            const modal = document.getElementById('addPlaceModal');
+            if (event.target === modal) {
+                modal.classList.remove('active');
             }
-        });
+        }
         
-        function previewImage(input) {
+        function previewImage(input, previewId) {
             const file = input.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const previewDiv = document.getElementById('imagePreview');
-                    const previewImg = document.getElementById('previewImg');
+                    const previewDiv = document.getElementById(previewId || 'imagePreview');
+                    const previewImg = document.getElementById(previewId ? previewId + '-img' : 'previewImg');
                     previewImg.src = e.target.result;
                     previewDiv.style.display = 'block';
                 };
@@ -703,47 +1010,51 @@ $category_breakdown = $category_stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         
         // Drag and drop functionality
-        const uploadArea = document.querySelector('.image-upload-area');
-        const fileInput = document.getElementById('image_upload');
+        const uploadAreas = document.querySelectorAll('.image-upload-area');
         
-        if (uploadArea && fileInput) {
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                uploadArea.addEventListener(eventName, preventDefaults, false);
-            });
+        uploadAreas.forEach((uploadArea, index) => {
+            const fileInput = index === 0 ? document.getElementById('add_image') : document.getElementById('image_upload');
             
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            
-            ['dragenter', 'dragover'].forEach(eventName => {
-                uploadArea.addEventListener(eventName, highlight, false);
-            });
-            
-            ['dragleave', 'drop'].forEach(eventName => {
-                uploadArea.addEventListener(eventName, unhighlight, false);
-            });
-            
-            function highlight(e) {
-                uploadArea.classList.add('dragover');
-            }
-            
-            function unhighlight(e) {
-                uploadArea.classList.remove('dragover');
-            }
-            
-            uploadArea.addEventListener('drop', handleDrop, false);
-            
-            function handleDrop(e) {
-                const dt = e.dataTransfer;
-                const files = dt.files;
+            if (uploadArea && fileInput) {
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    uploadArea.addEventListener(eventName, preventDefaults, false);
+                });
                 
-                if (files.length > 0) {
-                    fileInput.files = files;
-                    previewImage(fileInput);
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    uploadArea.addEventListener(eventName, highlight, false);
+                });
+                
+                ['dragleave', 'drop'].forEach(eventName => {
+                    uploadArea.addEventListener(eventName, unhighlight, false);
+                });
+                
+                function highlight(e) {
+                    uploadArea.classList.add('dragover');
+                }
+                
+                function unhighlight(e) {
+                    uploadArea.classList.remove('dragover');
+                }
+                
+                uploadArea.addEventListener('drop', handleDrop, false);
+                
+                function handleDrop(e) {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    
+                    if (files.length > 0) {
+                        fileInput.files = files;
+                        const previewId = index === 0 ? 'add-preview' : null;
+                        previewImage(fileInput, previewId);
+                    }
                 }
             }
-        }
+        });
     </script>
 </body>
 </html>

@@ -10,77 +10,8 @@ if (!isLoggedIn() || $_SESSION['username'] !== 'admin') {
 $database = new Database();
 $db = $database->getConnection();
 
-// Handle POI operations
+// Handle User operations
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['add_poi'])) {
-        $name = sanitizeInput($_POST['name']);
-        $description = sanitizeInput($_POST['description']);
-        $category = sanitizeInput($_POST['category']);
-        $latitude = (float)$_POST['latitude'];
-        $longitude = (float)$_POST['longitude'];
-        $address = sanitizeInput($_POST['address']);
-        $contact_info = sanitizeInput($_POST['contact_info']);
-        $opening_hours = sanitizeInput($_POST['opening_hours']);
-        $price_range = sanitizeInput($_POST['price_range']);
-        
-        $image_url = '';
-        if (isset($_FILES['poi_image']) && $_FILES['poi_image']['error'] === UPLOAD_ERR_OK) {
-            $upload_dir = '../uploads/pois/';
-            if (!file_exists($upload_dir)) {
-                mkdir($upload_dir, 0755, true);
-            }
-            
-            $file_extension = strtolower(pathinfo($_FILES['poi_image']['name'], PATHINFO_EXTENSION));
-            $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-            
-            if (in_array($file_extension, $allowed_extensions)) {
-                $new_filename = uniqid('poi_') . '.' . $file_extension;
-                $upload_path = $upload_dir . $new_filename;
-                
-                if (move_uploaded_file($_FILES['poi_image']['tmp_name'], $upload_path)) {
-                    $image_url = 'uploads/pois/' . $new_filename;
-                }
-            }
-        }
-        
-        $query = "INSERT INTO points_of_interest (name, description, category, latitude, longitude, address, contact_info, opening_hours, price_range, image_url, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        $stmt = $db->prepare($query);
-        $stmt->execute([$name, $description, $category, $latitude, $longitude, $address, $contact_info, $opening_hours, $price_range, $image_url, $_SESSION['user_id']]);
-        
-        // Log admin action
-        $admin_id = $_SESSION['user_id'];
-        $log_query = "INSERT INTO admin_logs (admin_id, action, target_type, target_id, new_data, description, ip_address) VALUES (?, 'create_poi', 'poi', ?, ?, 'Created new POI', ?)";
-        $log_stmt = $db->prepare($log_query);
-        $log_stmt->execute([$admin_id, $db->lastInsertId(), json_encode(['name' => $name, 'category' => $category]), $_SERVER['REMOTE_ADDR']]);
-        
-        header('Location: index.php?tab=pois&success=poi_added');
-        exit();
-    }
-    
-    if (isset($_POST['delete_poi'])) {
-        $poi_id = (int)$_POST['poi_id'];
-        
-        // Get POI data for logging
-        $poi_query = "SELECT * FROM points_of_interest WHERE id = ?";
-        $poi_stmt = $db->prepare($poi_query);
-        $poi_stmt->execute([$poi_id]);
-        $poi_data = $poi_stmt->fetch(PDO::FETCH_ASSOC);
-        
-        $query = "DELETE FROM points_of_interest WHERE id = ?";
-        $stmt = $db->prepare($query);
-        $stmt->execute([$poi_id]);
-        
-        // Log admin action
-        $admin_id = $_SESSION['user_id'];
-        $log_query = "INSERT INTO admin_logs (admin_id, action, target_type, target_id, old_data, description, ip_address) VALUES (?, 'delete_poi', 'poi', ?, ?, 'Deleted POI', ?)";
-        $log_stmt = $db->prepare($log_query);
-        $log_stmt->execute([$admin_id, $poi_id, json_encode($poi_data), $_SERVER['REMOTE_ADDR']]);
-        
-        header('Location: index.php?tab=pois&success=poi_deleted');
-        exit();
-    }
-    
-    // Handle User operations
     if (isset($_POST['add_user'])) {
         $username = sanitizeInput($_POST['username']);
         $email = sanitizeInput($_POST['email']);
@@ -214,12 +145,6 @@ if (isset($_GET['edit_user'])) {
     $edit_user = $edit_stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// Get all POIs
-$query = "SELECT * FROM points_of_interest ORDER BY created_at DESC";
-$stmt = $db->prepare($query);
-$stmt->execute();
-$pois = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 // Get enhanced statistics
 $stats_query = "SELECT 
     (SELECT COUNT(*) FROM points_of_interest) as total_pois,
@@ -279,18 +204,15 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                         case 'user_added': echo 'User successfully added!'; break;
                         case 'user_updated': echo 'User successfully updated!'; break;
                         case 'user_deleted': echo 'User successfully deleted!'; break;
-                        case 'poi_added': echo 'Point of Interest successfully added!'; break;
-                        case 'poi_deleted': echo 'Point of Interest successfully deleted!'; break;
                     }
                     ?>
                 </div>
             <?php endif; ?>
             
-            <!-- Added tabbed navigation for admin sections -->
+            <!-- removed places/POIs tab, now only Dashboard and Users tabs -->
             <div class="admin-tabs">
                 <a href="?tab=dashboard" class="admin-tab <?php echo $current_tab === 'dashboard' ? 'active' : ''; ?>">Dashboard</a>
                 <a href="?tab=users" class="admin-tab <?php echo $current_tab === 'users' ? 'active' : ''; ?>">Users</a>
-                <a href="?tab=pois" class="admin-tab <?php echo $current_tab === 'pois' ? 'active' : ''; ?>">Places</a>
             </div>
             
             <?php if ($current_tab === 'dashboard'): ?>
@@ -351,7 +273,6 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                 </div>
                 
             <?php elseif ($current_tab === 'users'): ?>
-                <!-- User Management Section -->
                 <div class="card mb-4">
                     <h2><?php echo $edit_user ? 'Edit User' : 'Add New User'; ?></h2>
                     <form method="POST">
@@ -494,141 +415,12 @@ $stats = $stats_stmt->fetch(PDO::FETCH_ASSOC);
                         </table>
                     </div>
                 </div>
-                
-            <?php elseif ($current_tab === 'pois'): ?>
-                <!-- POI Management Section (existing functionality) -->
-                <!-- Add New POI -->
-                <div class="card mb-4">
-                    <h2>Add New Point of Interest</h2>
-                    <!-- Added enctype for file uploads -->
-                    <form method="POST" enctype="multipart/form-data">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div class="form-group">
-                                <label for="name">Name *</label>
-                                <input type="text" id="name" name="name" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="category">Category *</label>
-                                <select id="category" name="category" class="form-control" required>
-                                    <option value="attraction">Attraction</option>
-                                    <option value="restaurant">Restaurant</option>
-                                    <option value="accommodation">Accommodation</option>
-                                    <option value="cultural">Cultural</option>
-                                    <option value="historical">Historical</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="latitude">Latitude *</label>
-                                <input type="number" id="latitude" name="latitude" class="form-control" step="0.000001" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="longitude">Longitude *</label>
-                                <input type="number" id="longitude" name="longitude" class="form-control" step="0.000001" required>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="description">Description *</label>
-                            <textarea id="description" name="description" class="form-control" rows="3" required></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="address">Address</label>
-                            <input type="text" id="address" name="address" class="form-control">
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
-                            <div class="form-group">
-                                <label for="contact_info">Contact Info</label>
-                                <input type="text" id="contact_info" name="contact_info" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label for="opening_hours">Opening Hours</label>
-                                <input type="text" id="opening_hours" name="opening_hours" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label for="price_range">Price Range</label>
-                                <input type="text" id="price_range" name="price_range" class="form-control">
-                            </div>
-                        </div>
-                        
-                        <!-- Replaced URL input with file upload and preview -->
-                        <div class="form-group">
-                            <label for="poi_image">POI Image</label>
-                            <div class="image-upload-container">
-                                <input type="file" id="poi_image" name="poi_image" class="form-control" accept="image/*" onchange="previewImage(this, 'poi-preview')">
-                                <div id="poi-preview" class="image-preview" style="display: none;">
-                                    <img id="poi-preview-img" src="/placeholder.svg" alt="Preview" style="max-width: 200px; max-height: 200px; object-fit: cover; border-radius: 8px; margin-top: 10px;">
-                                    <button type="button" onclick="removePreview('poi-preview', 'poi_image')" style="display: block; margin-top: 5px; padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Remove</button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" name="add_poi" class="btn btn-success">Add Point of Interest</button>
-                    </form>
-                </div>
-                
-                <!-- Manage POIs -->
-                <div class="card">
-                    <h3>Manage Points of Interest</h3>
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #f8f9fa;">
-                                    <th style="padding: 1rem; text-align: left; border-bottom: 1px solid #ddd;">Image</th>
-                                    <th style="padding: 1rem; text-align: left; border-bottom: 1px solid #ddd;">Name</th>
-                                    <th style="padding: 1rem; text-align: left; border-bottom: 1px solid #ddd;">Category</th>
-                                    <th style="padding: 1rem; text-align: left; border-bottom: 1px solid #ddd;">Rating</th>
-                                    <th style="padding: 1rem; text-align: left; border-bottom: 1px solid #ddd;">Created</th>
-                                    <th style="padding: 1rem; text-align: left; border-bottom: 1px solid #ddd;">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($pois as $poi): ?>
-                                    <tr>
-                                        <!-- Added image column with proper display -->
-                                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">
-                                            <?php if (!empty($poi['image_url'])): ?>
-                                                <img src="../<?php echo htmlspecialchars($poi['image_url']); ?>" 
-                                                     alt="<?php echo htmlspecialchars($poi['name']); ?>" 
-                                                     style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;">
-                                            <?php else: ?>
-                                                <div style="width: 60px; height: 60px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #666; font-size: 12px;">No Image</div>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">
-                                            <strong><?php echo htmlspecialchars($poi['name']); ?></strong><br>
-                                            <small style="color: #666;"><?php echo htmlspecialchars(substr($poi['description'], 0, 50)) . '...'; ?></small>
-                                        </td>
-                                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">
-                                            <span class="poi-category"><?php echo ucfirst($poi['category']); ?></span>
-                                        </td>
-                                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">
-                                            <?php echo $poi['rating']; ?>/5
-                                        </td>
-                                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">
-                                            <?php echo date('M j, Y', strtotime($poi['created_at'])); ?>
-                                        </td>
-                                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">
-                                            <a href="../poi-details.php?id=<?php echo $poi['id']; ?>" class="btn btn-primary" style="width:90px; height: 30px; margin-right: 0.5rem;">View</a>
-                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this POI?');">
-                                                <input type="hidden" name="poi_id" value="<?php echo $poi['id']; ?>">
-                                                <button type="submit" name="delete_poi" class="btn btn-danger" style="margin-top: 2px;  width:90px; height: 30px; ">Delete</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
             <?php endif; ?>
         </div>
     </main>
     
     <?php include '../includes/footer.php'; ?>
     
-    <!-- Added JavaScript for image preview functionality -->
     <script>
         function previewImage(input, previewId) {
             const preview = document.getElementById(previewId);

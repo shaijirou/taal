@@ -1,15 +1,14 @@
-
-
- <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&display=swap" rel="stylesheet">
 <header>
     <div class="container">
         <div class="header-content">
             <div class="logo">
                 <a href="#"><img id="logo" src="images/logo.png"></a>
                 <a href="index.php" style=" color: #7b3e19; text-decoration: none;">Ala Eh! </a>
-                
             </div>
-            <nav>
+            <!-- Added hamburger menu button for mobile navigation -->
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <nav id="navMenu">
                 <ul>
                     <li><a href="index.php">Home</a></li>
                     <li><a href="map.php">Map</a></li>
@@ -30,3 +29,32 @@
         </div>
     </div>
 </header>
+
+<!-- Added JavaScript for mobile menu toggle -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.getElementById('menuToggle');
+    const navMenu = document.getElementById('navMenu');
+    
+    if (menuToggle && navMenu) {
+        menuToggle.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+        });
+        
+        // Close menu when a link is clicked
+        const navLinks = navMenu.querySelectorAll('a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                navMenu.classList.remove('active');
+            });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('header')) {
+                navMenu.classList.remove('active');
+            }
+        });
+    }
+});
+</script>
