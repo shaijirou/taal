@@ -79,7 +79,7 @@ $featured_pois = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             height="514" 
                             controls 
                             autoplay 
-                             
+                            muted
                             playsinline 
                             poster="images/thumbnail.jpg" 
                             class="rounded-0" 
